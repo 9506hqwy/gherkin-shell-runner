@@ -2,6 +2,7 @@ package testing
 
 import (
 	"context"
+	"os"
 
 	"github.com/cucumber/godog"
 )
@@ -24,6 +25,7 @@ type tuiFeature struct {
 	size          *TerminalSize
 	ouputEncoding string
 	stdinEncoding string
+	delWorkspace  bool
 }
 
 type TerminalSize struct {
@@ -32,6 +34,8 @@ type TerminalSize struct {
 }
 
 func initTuituiFeature(t *tuiFeature) *tuiFeature {
+	_ = cleanTuiFeature(t)
+
 	t.workspace = EmptyString
 	t.envs = make(map[string]string)
 	t.command = EmptyString
@@ -43,6 +47,7 @@ func initTuituiFeature(t *tuiFeature) *tuiFeature {
 	t.size = nil
 	t.ouputEncoding = EmptyString
 	t.stdinEncoding = EmptyString
+	t.delWorkspace = false
 	return t
 }
 
@@ -63,12 +68,33 @@ func setTuiFeature(ctx context.Context) context.Context {
 	return context.WithValue(ctx, tuiFeatureKey{}, &t)
 }
 
+func cleanTuiFeature(t *tuiFeature) error {
+	var err error
+	if t.delWorkspace {
+		err = os.RemoveAll(t.workspace)
+		if err == nil {
+			t.delWorkspace = false
+		}
+	}
+
+	return err
+}
+
 func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Before(func(
 		ctx context.Context,
 		_ *godog.Scenario,
 	) (context.Context, error) {
 		return setTuiFeature(ctx), nil
+	})
+
+	ctx.After(func(
+		ctx context.Context,
+		_ *godog.Scenario,
+		_ error,
+	) (context.Context, error) {
+		t := getTuiFeature(ctx)
+		return ctx, cleanTuiFeature(t)
 	})
 
 	ctx.Given(`^command (.+)$`, setCommand)
@@ -83,6 +109,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^size (\d+) (\d+)$`, setSize)
 	ctx.Step(`^encoding output (.+)$`, setOutputEncoding)
 	ctx.Step(`^encoding stdin (.+)$`, setStdinEncoding)
+	ctx.Step(`^use temp workspace$`, setTempWorkspace)
 
 	ctx.When(`^exec$`, execCommand)
 

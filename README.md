@@ -43,6 +43,7 @@ Example:
 - `Given timeout <milli second>`
 - `Given size <width> <height>`
 - `Given encoding output <encoding>`
+- `Given use temp workspace`
 
 ### Act
 
@@ -96,6 +97,4 @@ Flags:
 - Timeout handling.
 - Newline handling.
 - Variables
-- Expand environment variables
 - File operation
-- Temporary workspace

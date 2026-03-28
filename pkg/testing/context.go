@@ -19,7 +19,10 @@ func setWorkspace(
 	workspace string,
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
-	t.workspace = os.ExpandEnv(workspace)
+	if !t.delWorkspace {
+		t.workspace = os.ExpandEnv(workspace)
+	}
+
 	return ctx, nil
 }
 
@@ -91,5 +94,17 @@ func setStdinEncoding(
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
 	t.stdinEncoding = encoding
+	return ctx, nil
+}
+
+func setTempWorkspace(ctx context.Context) (context.Context, error) {
+	temp, err := os.MkdirTemp("", "gsr-")
+	if err != nil {
+		return ctx, err
+	}
+
+	t := getTuiFeature(ctx)
+	t.workspace = temp
+	t.delWorkspace = true
 	return ctx, nil
 }

@@ -15,3 +15,17 @@ Feature: workspace
             /tmp
 
             """
+
+    Scenario: show current directory
+        # arrange
+        Given command pwd
+        And use temp workspace
+        # act
+        When exec
+        # assert
+        Then status eq 0
+        And output regex
+            """
+            gsr-.+
+
+            """
