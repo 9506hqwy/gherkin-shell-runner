@@ -32,18 +32,36 @@ Example:
 
 ## Supported Step Definitions
 
+### Arrange
+
 - `Given command <command>`
-- `Given arg <argument>`
 - `Given workspace <path>`
 - `Given env <name> <value>`
+- `Given arg <argument>`
+- `Given stdin <text>`
 - `Given stdin` followed by a doc string block
 - `Given timeout <milli second>`
 - `Given size <width> <height>`
+- `Given encoding output <encoding>`
+
+### Act
+
 - `When exec`
+
+### Assert
+
 - `Then status eq <code>`
+- `Then status not eq <code>`
+- `Then output is empty`
+- `Then output is not empty`
 - `Then output eq <text>`
 - `Then output eq` followed by a doc string block
-- `Then output is empty`
+- `Then output not eq <text>`
+- `Then output not eq` followed by a doc string block
+- `Then output regex <text>`
+- `Then output regex` followed by a doc string block
+- `Then output not regex <text>`
+- `Then output not regex` followed by a doc string block
 
 ## Example Feature
 
@@ -73,9 +91,11 @@ Flags:
 ## TODO
 
 - Wait for complete output correctly.
-- Add more assert step.
 - Generate HTML report.
 - Input encoding.
 - Timeout handling.
 - Newline handling.
-- Elapse time.
+- Variables
+- Expand environment variables
+- File operation
+- Temporary workspace

@@ -81,7 +81,7 @@ func createComand(
 		cmd.Env = append(cmd.Env, env)
 	}
 
-	if t.workspace != "" {
+	if t.workspace != EmptyString {
 		cmd.Dir = t.workspace
 	}
 
@@ -101,7 +101,7 @@ func runCommand(
 	terminal := newTerminal()
 	go terminal.Copy(*ptmx)
 
-	if t.stdin != "" {
+	if t.stdin != EmptyString {
 		err = inputStdin(t, ptmx)
 		if err != nil {
 			return nil, err

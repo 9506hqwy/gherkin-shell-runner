@@ -43,7 +43,7 @@ func (t *terminal) Copy(src io.Reader) (written int64, err error) {
 	buffer := make([]byte, 1)
 	for {
 		n, err := src.Read(buffer)
-		if err == io.EOF || n == 0 {
+		if err == io.EOF || n == ZERO {
 			break
 		}
 

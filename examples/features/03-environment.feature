@@ -12,4 +12,5 @@ Feature: environment variables
         When exec
         # assert
         Then status eq 0
+        And output is not empty
         And output eq VALUE

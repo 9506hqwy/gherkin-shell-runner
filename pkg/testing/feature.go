@@ -6,7 +6,9 @@ import (
 	"github.com/cucumber/godog"
 )
 
-const Empty = 0
+const ZERO = 0
+const EmptyString = ""
+const DefaultTimeout = 60 * 1000
 
 type tuiFeatureKey struct{}
 
@@ -30,20 +32,18 @@ type TerminalSize struct {
 }
 
 func initTuituiFeature(t *tuiFeature) *tuiFeature {
-	//revive:disable:add-constant
-	t.workspace = ""
+	t.workspace = EmptyString
 	t.envs = make(map[string]string)
-	t.command = ""
-	t.args = make([]string, 0)
-	t.stdin = ""
-	t.exitCode = 0
-	t.output = make([]byte, 0)
-	t.timeout = 60 * 1000
+	t.command = EmptyString
+	t.args = make([]string, ZERO)
+	t.stdin = EmptyString
+	t.exitCode = ZERO
+	t.output = make([]byte, ZERO)
+	t.timeout = DefaultTimeout
 	t.size = nil
-	t.ouputEncoding = ""
-	t.stdinEncoding = ""
+	t.ouputEncoding = EmptyString
+	t.stdinEncoding = EmptyString
 	return t
-	//revive:enable:add-constant
 }
 
 func getTuiFeature(ctx context.Context) *tuiFeature {
@@ -87,8 +87,16 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.When(`^exec$`, execCommand)
 
 	ctx.Then(`^status eq (-?\d+)$`, checkStatusEq)
+	ctx.Then(`^status not eq (-?\d+)$`, checkStatusNotEq)
 
 	ctx.Step(`^output is empty$`, checkOutputIsEmpty)
+	ctx.Step(`^output is not empty$`, checkOutputIsNotEmpty)
 	ctx.Step(`^output eq$`, checkOutputEqBlock)
 	ctx.Step(`^output eq (.+)$`, checkOutputEqLine)
+	ctx.Step(`^output not eq$`, checkOutputNotEqBlock)
+	ctx.Step(`^output not eq (.+)$`, checkOutputNotEqLine)
+	ctx.Step(`^output regex$`, checkOutputRegexBlock)
+	ctx.Step(`^output regex (.+)$`, checkOutputRegexLine)
+	ctx.Step(`^output not regex$`, checkOutputNotRegexBlock)
+	ctx.Step(`^output not regex (.+)$`, checkOutputNotRegexLine)
 }

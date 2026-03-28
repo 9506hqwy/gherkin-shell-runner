@@ -11,4 +11,5 @@ Feature: sleep command
         When exec
         # assert
         Then status eq -1
+        Then status not eq 0
         And output is empty
