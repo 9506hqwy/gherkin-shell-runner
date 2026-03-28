@@ -1,5 +1,6 @@
 {
     "recommendations": [
+        "alexkrechik.cucumberautocomplete",
         "davidanson.vscode-markdownlint",
         "editorconfig.editorconfig",
         "github.vscode-github-actions",

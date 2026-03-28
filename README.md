@@ -1,102 +1,81 @@
-# Template for Go Module
+# Gherkin Shell Runner
 
-This repository provides a template for Go module.
+This repository provides the TUI test runner that run tests written in Gherkin `.feature` files.
 
-## Prepare
+## Features
 
-1. Rename module name in *go.mod*.
-2. Remove example package module.
+- Run shell commands from Gherkin scenarios
+- Pass arguments with `arg` steps
+- Provide stdin content with `stdin` step
+- Set working directory with `workspace` step
+- Set environment variables with `env` step
+- Assert exit status and command output
+- Filter scenarios by tags
 
-## Development
-
-### Formatting
-
-Format source code.
-
-```sh
-go fmt ./...
-```
-
-### Linting
-
-Lint source code.
+## Build
 
 ```sh
-go vet ./...
-go tool revive ./...
-go tool staticcheck ./...
+go build -o bin/gherkin-shell-runner ./cmd/gherkin-shell-runner
 ```
 
-### Testing
-
-Execute test code.
+## Usage
 
 ```sh
-go test ./...
+./bin/gherkin-shell-runner [flags] [feature_files_or_directories]
 ```
 
-### Profiling
-
-Run benchmark with profiler.
+Example:
 
 ```sh
-go test <Package Path> -bench "." -cpuprofile cpu.prof -memprofile mem.prof
+./bin/gherkin-shell-runner examples/features
 ```
 
-Show summary.
+## Supported Step Definitions
+
+- `Given command <command>`
+- `Given arg <argument>`
+- `Given workspace <path>`
+- `Given env <name> <value>`
+- `Given stdin` followed by a doc string block
+- `Given timeout <milli second>`
+- `Given size <width> <height>`
+- `When exec`
+- `Then status eq <code>`
+- `Then output eq <text>`
+- `Then output eq` followed by a doc string block
+- `Then output is empty`
+
+## Example Feature
+
+see [examples](./examples/features/).
+
+## Help
 
 ```sh
-go tool pprof --text <Profile File>
+$ ./bin/gherkin-shell-runner -h
+Gherkin Shell Runner
+
+Usage:
+  gherkin-shell-runner [flags]
+
+Flags:
+      --concurrency int    Run scenario concurrency. (default 1)
+      --format string      Report format. (default "progress")
+  -h, --help               help for gherkin-shell-runner
+      --no-colors          Disable ansi color.
+      --random int         Randamize scenario order. (default -1)
+      --show-steps         Show avaiblae step definitions.
+      --stop-on-failture   Stop on first failed scenario.
+      --tags string        Filter scenario. (default "~@ignore")
+  -v, --version            version for gherkin-shell-runner
 ```
 
-Convert to image file from pprof file.
+## TODO
 
-```sh
-go tool pprof --png <Profile File> > profile.png
-```
-
-### Benchmark
-
-Run test with benchmark. N is iteration count.
-
-```sh
-go test ./... -bench "." -count N
-```
-
-### Updating
-
-Update dependency tools.
-
-```sh
-go get -u tool
-```
-
-### License Checking
-
-Check dependency licenses.
-
-```sh
-go tool go-licenses report ./...
-```
-
-Dump dependency licenses.
-
-```sh
-go tool go-licenses save ./... --save_path ./licenses
-```
-
-### Documentation
-
-Generate API document.
-
-```sh
-./scripts/gen-docs.sh
-```
-
-### Building Artifacts
-
-Build binary.
-
-```sh
-go build cmd/shell/main.go
-```
+- Wait for complete output correctly.
+- Add more assert step.
+- Generate HTML report.
+- Input encoding.
+- Timeout handling.
+- Newline handling.
+- Elapse time.
