@@ -2,6 +2,7 @@ package testing
 
 import (
 	"context"
+	"os"
 
 	"github.com/cucumber/godog"
 )
@@ -9,7 +10,7 @@ import (
 func setCommand(ctx context.Context, command string) (context.Context, error) {
 	t := getTuiFeature(ctx)
 	initTuituiFeature(t)
-	t.command = command
+	t.command = os.ExpandEnv(command)
 	return ctx, nil
 }
 
@@ -18,7 +19,7 @@ func setWorkspace(
 	workspace string,
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
-	t.workspace = workspace
+	t.workspace = os.ExpandEnv(workspace)
 	return ctx, nil
 }
 

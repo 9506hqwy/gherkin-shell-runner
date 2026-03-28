@@ -4,7 +4,7 @@ Feature: workspace
 
     Scenario: show current directory
         # arrange
-        Given command C:\WINDOWS\System32\cmd.exe
+        Given command ${SYSTEMROOT}\System32\cmd.exe
         And workspace C:\
         And arg /c
         And arg cd

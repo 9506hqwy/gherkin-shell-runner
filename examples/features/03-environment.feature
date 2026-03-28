@@ -4,7 +4,7 @@ Feature: environment variables
 
     Scenario: echo env
         # arrange
-        Given command bash
+        Given command ${SHELL}
         And env KEY VALUE
         And arg -c
         And arg echo -n $KEY
