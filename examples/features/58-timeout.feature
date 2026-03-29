@@ -4,9 +4,9 @@ Feature: timeout command
 
     Scenario: timeout
         # arrange
-        Given command cmd.exe
-        And arg /c
-        And arg timeout /t 1
+        Given command "cmd.exe"
+        And arg "/c"
+        And arg "timeout /t 1"
         And timeout 500
         # act
         When exec

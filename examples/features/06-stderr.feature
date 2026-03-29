@@ -4,9 +4,9 @@ Feature: echo command
 
     Scenario: echo text
         # arrange
-        Given command bash
-        And arg -c
-        And arg echo 1>&2 error
+        Given command "bash"
+        And arg "-c"
+        And arg "echo 1>&2 error"
         # act
         When exec
         # assert

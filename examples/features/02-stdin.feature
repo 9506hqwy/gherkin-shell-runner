@@ -4,7 +4,7 @@ Feature: cat command
 
     Scenario: cat text
         # arrange
-        Given command cat
+        Given command "cat"
         And stdin
             """
             text1

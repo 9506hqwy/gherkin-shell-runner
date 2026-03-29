@@ -4,9 +4,9 @@ Feature: exit code
 
     Scenario: exit 1
         # arrange
-        Given command cmd.exe
-        And arg /c
-        And arg exit 1
+        Given command "cmd.exe"
+        And arg "/c"
+        And arg "exit 1"
         # act
         When exec
         # assert

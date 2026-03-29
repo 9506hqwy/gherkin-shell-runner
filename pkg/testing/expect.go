@@ -46,7 +46,7 @@ func checkStatus(
 }
 
 func checkOutputIsEmpty(ctx context.Context) (context.Context, error) {
-	return checkOutputEqLine(ctx, EmptyString)
+	return checkOutputEq(ctx, EmptyString, CompareModeEqual)
 }
 
 func checkOutputIsNotEmpty(ctx context.Context) (context.Context, error) {
@@ -64,28 +64,38 @@ func checkOutputEqBlock(
 	ctx context.Context,
 	expect *godog.DocString,
 ) (context.Context, error) {
-	return checkOutputEqLine(ctx, expect.Content)
+	return checkOutputEq(ctx, expect.Content, CompareModeEqual)
 }
 
 func checkOutputEqLine(
 	ctx context.Context,
 	expect string,
 ) (context.Context, error) {
-	return checkOutputEq(ctx, expect, CompareModeEqual)
+	exp, err := parseValueOne(expect)
+	if err != nil {
+		return ctx, err
+	}
+
+	return checkOutputEq(ctx, exp, CompareModeEqual)
 }
 
 func checkOutputNotEqBlock(
 	ctx context.Context,
 	expect *godog.DocString,
 ) (context.Context, error) {
-	return checkOutputNotEqLine(ctx, expect.Content)
+	return checkOutputEq(ctx, expect.Content, CompareModeNotEqual)
 }
 
 func checkOutputNotEqLine(
 	ctx context.Context,
 	expect string,
 ) (context.Context, error) {
-	return checkOutputEq(ctx, expect, CompareModeNotEqual)
+	exp, err := parseValueOne(expect)
+	if err != nil {
+		return ctx, err
+	}
+
+	return checkOutputEq(ctx, exp, CompareModeNotEqual)
 }
 
 func checkOutputEq(
@@ -113,28 +123,38 @@ func checkOutputRegexBlock(
 	ctx context.Context,
 	pattern *godog.DocString,
 ) (context.Context, error) {
-	return checkOutputRegexLine(ctx, pattern.Content)
+	return checkOutputRegex(ctx, pattern.Content, CompareModeEqual)
 }
 
 func checkOutputRegexLine(
 	ctx context.Context,
 	pattern string,
 ) (context.Context, error) {
-	return checkOutputRegex(ctx, pattern, CompareModeEqual)
+	ptn, err := parseValueOne(pattern)
+	if err != nil {
+		return ctx, err
+	}
+
+	return checkOutputRegex(ctx, ptn, CompareModeEqual)
 }
 
 func checkOutputNotRegexBlock(
 	ctx context.Context,
 	pattern *godog.DocString,
 ) (context.Context, error) {
-	return checkOutputNotRegexLine(ctx, pattern.Content)
+	return checkOutputRegex(ctx, pattern.Content, CompareModeNotEqual)
 }
 
 func checkOutputNotRegexLine(
 	ctx context.Context,
 	pattern string,
 ) (context.Context, error) {
-	return checkOutputRegex(ctx, pattern, CompareModeNotEqual)
+	ptn, err := parseValueOne(pattern)
+	if err != nil {
+		return ctx, err
+	}
+
+	return checkOutputRegex(ctx, ptn, CompareModeNotEqual)
 }
 
 func checkOutputRegex(

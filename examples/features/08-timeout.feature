@@ -4,8 +4,8 @@ Feature: sleep command
 
     Scenario: sleep timeout
         # arrange
-        Given command sleep
-        And arg 1
+        Given command "sleep"
+        And arg "1"
         And timeout 500
         # act
         When exec

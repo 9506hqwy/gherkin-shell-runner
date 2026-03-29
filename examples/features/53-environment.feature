@@ -4,10 +4,10 @@ Feature: environment variables
 
     Scenario: echo env
         # arrange
-        Given command cmd.exe
-        And env KEY VALUE
-        And arg /c
-        And arg echo %KEY%
+        Given command "cmd.exe"
+        And env KEY "VALUE"
+        And arg "/c"
+        And arg "echo %KEY%"
         # act
         When exec
         # assert

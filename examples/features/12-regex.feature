@@ -4,9 +4,9 @@ Feature: ls and iconv
 
     Scenario: ls directory
         # arrange
-        Given command ls
-        And arg -l
-        And arg ./examples/features
+        Given command "ls"
+        And arg "-l"
+        And arg "./examples/features"
         # act
         When exec
         # assert
@@ -22,15 +22,15 @@ Feature: ls and iconv
 
     Scenario: iconv text
         # arrange
-        Given command iconv
-        And arg -f
-        And arg utf8
-        And arg -t
-        And arg sjis
-        And stdin こんにちは
+        Given command "iconv"
+        And arg "-f"
+        And arg "utf8"
+        And arg "-t"
+        And arg "sjis"
+        And stdin "こんにちは"
         # act
         When exec
         # assert
         Then status eq 0
         And encoding output sjis
-        And output regex んにち
+        And output regex "んにち"

@@ -4,9 +4,9 @@ Feature: sort command
 
     Scenario: sort text
         # arrange
-        Given command cmd.exe
-        And arg /c
-        And arg sort
+        Given command "cmd.exe"
+        And arg "/c"
+        And arg "sort"
         And stdin
             """
             text2

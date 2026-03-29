@@ -4,8 +4,8 @@ Feature: workspace
 
     Scenario: show current directory
         # arrange
-        Given command pwd
-        And workspace /tmp
+        Given command "pwd"
+        And workspace "/tmp"
         # act
         When exec
         # assert
@@ -18,7 +18,7 @@ Feature: workspace
 
     Scenario: show current directory
         # arrange
-        Given command pwd
+        Given command "pwd"
         And use temp workspace
         # act
         When exec

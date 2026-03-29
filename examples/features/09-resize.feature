@@ -4,8 +4,8 @@ Feature: stty command
 
     Scenario: stty size
         # arrange
-        Given command stty
-        And arg size
+        Given command "stty"
+        And arg "size"
         And size 1 1
         # act
         When exec

@@ -4,9 +4,9 @@ Feature: echo command
 
     Scenario: echo text
         # arrange
-        Given command cmd.exe
-        And arg /c
-        And arg echo Hello, World!
+        Given command "cmd.exe"
+        And arg "/c"
+        And arg "echo Hello, World!"
         # act
         When exec
         # assert

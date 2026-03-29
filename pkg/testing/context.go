@@ -10,7 +10,13 @@ import (
 func setCommand(ctx context.Context, command string) (context.Context, error) {
 	t := getTuiFeature(ctx)
 	initTuituiFeature(t)
-	t.command = os.ExpandEnv(command)
+
+	cmd, err := parseValueOne(command)
+	if err != nil {
+		return ctx, err
+	}
+
+	t.command = os.ExpandEnv(cmd)
 	return ctx, nil
 }
 
@@ -19,8 +25,14 @@ func setWorkspace(
 	workspace string,
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
+
+	ws, err := parseValueOne(workspace)
+	if err != nil {
+		return ctx, err
+	}
+
 	if !t.delWorkspace {
-		t.workspace = os.ExpandEnv(workspace)
+		t.workspace = os.ExpandEnv(ws)
 	}
 
 	return ctx, nil
@@ -32,13 +44,25 @@ func setEnvironment(
 	value string,
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
-	t.envs[key] = value
+
+	v, err := parseValueOne(value)
+	if err != nil {
+		return ctx, err
+	}
+
+	t.envs[key] = v
 	return ctx, nil
 }
 
 func setArgument(ctx context.Context, arg string) (context.Context, error) {
 	t := getTuiFeature(ctx)
-	t.args = append(t.args, arg)
+
+	a, err := parseValueOne(arg)
+	if err != nil {
+		return ctx, err
+	}
+
+	t.args = append(t.args, a)
 	return ctx, nil
 }
 
@@ -46,7 +70,9 @@ func setStdinBlock(
 	ctx context.Context,
 	stdin *godog.DocString,
 ) (context.Context, error) {
-	return setStdinLine(ctx, stdin.Content)
+	t := getTuiFeature(ctx)
+	t.stdin = stdin.Content
+	return ctx, nil
 }
 
 func setStdinLine(
@@ -54,7 +80,13 @@ func setStdinLine(
 	stdin string,
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
-	t.stdin = stdin
+
+	in, err := parseValueOne(stdin)
+	if err != nil {
+		return ctx, err
+	}
+
+	t.stdin = in
 	return ctx, nil
 }
 

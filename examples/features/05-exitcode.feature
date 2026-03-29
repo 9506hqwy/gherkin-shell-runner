@@ -4,9 +4,9 @@ Feature: exit code
 
     Scenario: exit 1
         # arrange
-        Given command bash
-        And arg -c
-        And arg exit 1
+        Given command "bash"
+        And arg "-c"
+        And arg "exit 1"
         # act
         When exec
         # assert

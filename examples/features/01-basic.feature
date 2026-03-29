@@ -4,11 +4,11 @@ Feature: echo command
 
     Scenario: echo text
         # arrange
-        Given command echo
-        And arg -n
-        And arg Hello, World!
+        Given command "echo"
+        And arg "-n"
+        And arg "Hello, World!"
         # act
         When exec
         # assert
         Then status eq 0
-        And output eq Hello, World!
+        And output eq "Hello, World!"

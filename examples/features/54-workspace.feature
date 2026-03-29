@@ -4,10 +4,10 @@ Feature: workspace
 
     Scenario: show current directory
         # arrange
-        Given command ${SYSTEMROOT}\System32\cmd.exe
-        And workspace C:\
-        And arg /c
-        And arg cd
+        Given command "${SYSTEMROOT}\System32\cmd.exe"
+        And workspace "C:\\"
+        And arg "/c"
+        And arg "cd"
         # act
         When exec
         # assert
