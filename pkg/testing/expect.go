@@ -71,7 +71,9 @@ func checkOutputEqLine(
 	ctx context.Context,
 	expect string,
 ) (context.Context, error) {
-	exp, err := parseValueOne(expect)
+	t := getTuiFeature(ctx)
+
+	exp, err := parseValueOne(t, expect)
 	if err != nil {
 		return ctx, err
 	}
@@ -90,7 +92,9 @@ func checkOutputNotEqLine(
 	ctx context.Context,
 	expect string,
 ) (context.Context, error) {
-	exp, err := parseValueOne(expect)
+	t := getTuiFeature(ctx)
+
+	exp, err := parseValueOne(t, expect)
 	if err != nil {
 		return ctx, err
 	}
@@ -130,7 +134,9 @@ func checkOutputRegexLine(
 	ctx context.Context,
 	pattern string,
 ) (context.Context, error) {
-	ptn, err := parseValueOne(pattern)
+	t := getTuiFeature(ctx)
+
+	ptn, err := parseValueOne(t, pattern)
 	if err != nil {
 		return ctx, err
 	}
@@ -149,7 +155,9 @@ func checkOutputNotRegexLine(
 	ctx context.Context,
 	pattern string,
 ) (context.Context, error) {
-	ptn, err := parseValueOne(pattern)
+	t := getTuiFeature(ctx)
+
+	ptn, err := parseValueOne(t, pattern)
 	if err != nil {
 		return ctx, err
 	}

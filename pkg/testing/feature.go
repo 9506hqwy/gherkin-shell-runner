@@ -26,6 +26,7 @@ type tuiFeature struct {
 	ouputEncoding string
 	stdinEncoding string
 	delWorkspace  bool
+	vars          map[string]string
 }
 
 type TerminalSize struct {
@@ -48,6 +49,11 @@ func initTuituiFeature(t *tuiFeature) *tuiFeature {
 	t.ouputEncoding = EmptyString
 	t.stdinEncoding = EmptyString
 	t.delWorkspace = false
+
+	if t.vars == nil {
+		t.vars = make(map[string]string)
+	}
+
 	return t
 }
 
@@ -110,6 +116,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^encoding output (.+)$`, setOutputEncoding)
 	ctx.Step(`^encoding stdin (.+)$`, setStdinEncoding)
 	ctx.Step(`^use temp workspace$`, setTempWorkspace)
+	ctx.Step(`^set ([A-Za-z][0-9A-Za-z_]*) (.+)$`, setVariable)
 
 	ctx.When(`^exec$`, execCommand)
 

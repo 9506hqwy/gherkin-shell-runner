@@ -11,7 +11,7 @@ func setCommand(ctx context.Context, command string) (context.Context, error) {
 	t := getTuiFeature(ctx)
 	initTuituiFeature(t)
 
-	cmd, err := parseValueOne(command)
+	cmd, err := parseValueOne(t, command)
 	if err != nil {
 		return ctx, err
 	}
@@ -26,7 +26,7 @@ func setWorkspace(
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
 
-	ws, err := parseValueOne(workspace)
+	ws, err := parseValueOne(t, workspace)
 	if err != nil {
 		return ctx, err
 	}
@@ -45,7 +45,7 @@ func setEnvironment(
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
 
-	v, err := parseValueOne(value)
+	v, err := parseValueOne(t, value)
 	if err != nil {
 		return ctx, err
 	}
@@ -57,7 +57,7 @@ func setEnvironment(
 func setArgument(ctx context.Context, arg string) (context.Context, error) {
 	t := getTuiFeature(ctx)
 
-	a, err := parseValueOne(arg)
+	a, err := parseValueOne(t, arg)
 	if err != nil {
 		return ctx, err
 	}
@@ -81,7 +81,7 @@ func setStdinLine(
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
 
-	in, err := parseValueOne(stdin)
+	in, err := parseValueOne(t, stdin)
 	if err != nil {
 		return ctx, err
 	}
@@ -138,5 +138,21 @@ func setTempWorkspace(ctx context.Context) (context.Context, error) {
 	t := getTuiFeature(ctx)
 	t.workspace = temp
 	t.delWorkspace = true
+	return ctx, nil
+}
+
+func setVariable(
+	ctx context.Context,
+	name string,
+	value string,
+) (context.Context, error) {
+	t := getTuiFeature(ctx)
+
+	v, err := parseValueOne(t, value)
+	if err != nil {
+		return ctx, err
+	}
+
+	t.vars[name] = v
 	return ctx, nil
 }

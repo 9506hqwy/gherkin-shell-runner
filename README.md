@@ -44,6 +44,7 @@ Example:
 - `Given size <width> <height>`
 - `Given encoding output <encoding>`
 - `Given use temp workspace`
+- `Given set <name> <value>`
 
 ### Act
 
@@ -96,5 +97,5 @@ Flags:
 - Input encoding.
 - Timeout handling.
 - Newline handling.
-- Variables
 - File operation
+- Expression

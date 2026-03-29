@@ -347,7 +347,7 @@ func number(b byte) bool {
 	return b >= KeyCode0 && b <= KeyCode9
 }
 
-func parseValueOne(value string) (string, error) {
+func parseValueOne(t *tuiFeature, value string) (string, error) {
 	input := strings.NewReader(value)
 	reader := newTokenReader(input)
 	err := reader.parseInput()
@@ -362,5 +362,19 @@ func parseValueOne(value string) (string, error) {
 	//revive:enable:add-constant
 
 	token := reader.tokens[ZERO]
-	return token.value, nil
+
+	switch token.tokenType {
+	case TokenVariable:
+		value, ok := t.vars[token.value]
+		if !ok {
+			return EmptyString, fmt.Errorf(
+				"not found variable: %s",
+				token.value,
+			)
+		}
+
+		return value, nil
+	default:
+		return token.value, nil
+	}
 }
