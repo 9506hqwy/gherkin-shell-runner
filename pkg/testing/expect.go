@@ -14,19 +14,19 @@ import (
 type CompareMode int
 
 const (
-	Equal CompareMode = iota
-	NotEqual
+	CompareModeEqual CompareMode = iota
+	CompareModeNotEqual
 )
 
 func checkStatusEq(ctx context.Context, expect int) (context.Context, error) {
-	return checkStatus(ctx, expect, Equal)
+	return checkStatus(ctx, expect, CompareModeEqual)
 }
 
 func checkStatusNotEq(
 	ctx context.Context,
 	expect int,
 ) (context.Context, error) {
-	return checkStatus(ctx, expect, NotEqual)
+	return checkStatus(ctx, expect, CompareModeNotEqual)
 }
 
 func checkStatus(
@@ -35,7 +35,7 @@ func checkStatus(
 	mode CompareMode,
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
-	if (t.exitCode == expect) != (mode == Equal) {
+	if (t.exitCode == expect) != (mode == CompareModeEqual) {
 		return ctx, fmt.Errorf(
 			"expected exit code to be: %d, but actual is: %d",
 			expect,
@@ -71,7 +71,7 @@ func checkOutputEqLine(
 	ctx context.Context,
 	expect string,
 ) (context.Context, error) {
-	return checkOutputEq(ctx, expect, Equal)
+	return checkOutputEq(ctx, expect, CompareModeEqual)
 }
 
 func checkOutputNotEqBlock(
@@ -85,7 +85,7 @@ func checkOutputNotEqLine(
 	ctx context.Context,
 	expect string,
 ) (context.Context, error) {
-	return checkOutputEq(ctx, expect, NotEqual)
+	return checkOutputEq(ctx, expect, CompareModeNotEqual)
 }
 
 func checkOutputEq(
@@ -99,7 +99,7 @@ func checkOutputEq(
 		return ctx, err
 	}
 
-	if bytes.Equal(t.output, expectedBytes) != (mode == Equal) {
+	if bytes.Equal(t.output, expectedBytes) != (mode == CompareModeEqual) {
 		return ctx, fmt.Errorf(
 			"expected Output to be: '%s', but actual is: '%s'",
 			expect,
@@ -120,7 +120,7 @@ func checkOutputRegexLine(
 	ctx context.Context,
 	pattern string,
 ) (context.Context, error) {
-	return checkOutputRegex(ctx, pattern, Equal)
+	return checkOutputRegex(ctx, pattern, CompareModeEqual)
 }
 
 func checkOutputNotRegexBlock(
@@ -134,7 +134,7 @@ func checkOutputNotRegexLine(
 	ctx context.Context,
 	pattern string,
 ) (context.Context, error) {
-	return checkOutputRegex(ctx, pattern, NotEqual)
+	return checkOutputRegex(ctx, pattern, CompareModeNotEqual)
 }
 
 func checkOutputRegex(
@@ -150,7 +150,7 @@ func checkOutputRegex(
 		return ctx, err
 	}
 
-	if re.Match(outputBytes) != (mode == Equal) {
+	if re.Match(outputBytes) != (mode == CompareModeEqual) {
 		return ctx, fmt.Errorf(
 			"expected Output to match: '%s', but actual is: '%s'",
 			pattern,
