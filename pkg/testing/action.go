@@ -111,7 +111,7 @@ func runCommand(
 	err = cmd.Wait()
 
 	// TODO: wait for complete output correctly.
-	time.Sleep(30 * time.Millisecond)
+	time.Sleep(time.Duration(t.wait) * time.Millisecond)
 
 	return terminal.Buffer(), err
 }

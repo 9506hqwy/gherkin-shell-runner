@@ -90,6 +90,12 @@ func setStdinLine(
 	return ctx, nil
 }
 
+func setWait(ctx context.Context, wait int) (context.Context, error) {
+	t := getTuiFeature(ctx)
+	t.wait = wait
+	return ctx, nil
+}
+
 func setTimeout(ctx context.Context, timeout int) (context.Context, error) {
 	t := getTuiFeature(ctx)
 	t.timeout = timeout

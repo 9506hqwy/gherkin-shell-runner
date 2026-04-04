@@ -40,6 +40,7 @@ Example:
 - `Given arg <argument>`
 - `Given stdin <text>`
 - `Given stdin` followed by a doc string block
+- `Given wait <milli second>`
 - `Given timeout <milli second>`
 - `Given size <width> <height>`
 - `Given encoding output <encoding>`

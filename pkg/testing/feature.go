@@ -9,6 +9,7 @@ import (
 
 const ZERO = 0
 const EmptyString = ""
+const DefaultWait = 30
 const DefaultTimeout = 60 * 1000
 
 type tuiFeatureKey struct{}
@@ -21,6 +22,7 @@ type tuiFeature struct {
 	stdin         string
 	exitCode      int
 	output        []byte
+	wait          int
 	timeout       int
 	size          *TerminalSize
 	ouputEncoding string
@@ -44,6 +46,7 @@ func initTuituiFeature(t *tuiFeature) *tuiFeature {
 	t.stdin = EmptyString
 	t.exitCode = ZERO
 	t.output = make([]byte, ZERO)
+	t.wait = DefaultWait
 	t.timeout = DefaultTimeout
 	t.size = nil
 	t.ouputEncoding = EmptyString
@@ -111,6 +114,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^stdin$`, setStdinBlock)
 	ctx.Step(`^stdin (.+)$`, setStdinLine)
 
+	ctx.Step(`^wait (\d+)$`, setWait)
 	ctx.Step(`^timeout (\d+)$`, setTimeout)
 	ctx.Step(`^size (\d+) (\d+)$`, setSize)
 	ctx.Step(`^encoding output (.+)$`, setOutputEncoding)
