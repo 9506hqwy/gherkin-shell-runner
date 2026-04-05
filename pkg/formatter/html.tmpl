@@ -1,0 +1,64 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100vw;
+        }
+        td {
+            border: 1px solid #dddddd;
+        }
+        tr:hover {
+            background-color: #dddddd;
+        }
+        td.line-num {
+            width: 90px;
+            padding-right: 10px;
+            text-align: right;
+        }
+        td.text {
+            padding-left: 10px;
+        }
+        .comment {
+            background-color: #dddddd;
+        }
+        .passed {
+            background-color: #c7edd0;
+        }
+        .failed {
+            background-color: #f2cbcf;
+        }
+        .skipped {
+            background-color: #bde8f2;
+        }
+        p.ws.indent {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+{{range .}}
+    <article>
+        <h1>{{.URI}}</h1>
+        <section>
+            <table>
+                {{range .Lines}}
+                <tr class="{{.HTMLClass}}">
+                    <td class="line-num">{{.Location.Line}}</td>
+                    <td class="text">
+                        <p class="ws indent" style="width: {{ .HTMLIndent }}em;"></p>
+                        {{.HTMLLine}}
+                    </td>
+                </tr>
+                {{end}}
+            </table>
+        </section>
+    </article>
+{{end}}
+</body>
+</html>

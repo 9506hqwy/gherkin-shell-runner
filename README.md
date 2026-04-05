@@ -94,9 +94,10 @@ Flags:
 ## TODO
 
 - Wait for complete output correctly.
-- Generate HTML report.
+- More information in HTML report.
 - Input encoding.
 - Timeout handling.
 - Newline handling.
 - File operation
 - Expression
+- DataTable

@@ -9,6 +9,7 @@ import (
 	"github.com/cucumber/godog/colors"
 	"github.com/spf13/cobra"
 
+	_ "github.com/9506hqwy/gherkin-shell-runner/pkg/formatter"
 	"github.com/9506hqwy/gherkin-shell-runner/pkg/testing"
 )
 

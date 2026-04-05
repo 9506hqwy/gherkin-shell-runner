@@ -12,6 +12,7 @@ tool (
 require (
 	github.com/aymanbagabas/go-pty v0.2.2
 	github.com/cucumber/godog v0.15.1
+	github.com/cucumber/messages/go/v21 v21.0.1
 	github.com/spf13/cobra v1.10.2
 	github.com/u-root/u-root v0.16.0
 	golang.org/x/text v0.35.0
@@ -22,7 +23,6 @@ require (
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/creack/pty v1.1.24 // indirect
 	github.com/cucumber/gherkin/go/v26 v26.2.0 // indirect
-	github.com/cucumber/messages/go/v21 v21.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
