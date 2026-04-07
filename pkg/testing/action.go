@@ -12,7 +12,7 @@ import (
 	"github.com/cucumber/godog"
 )
 
-const attachmentMime = "plain/text"
+const attachmentMime = "text/plain"
 
 func execCommand(ctx context.Context) (context.Context, error) {
 	t := getTuiFeature(ctx)

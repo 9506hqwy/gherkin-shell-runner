@@ -55,6 +55,8 @@ func (f *htmlFmt) Summary() {
 				scenarioLine,
 			)
 		}
+
+		complementLine(file)
 	}
 
 	err := marshalHTML(files, f.out)
@@ -99,12 +101,20 @@ func (f *htmlFmt) setStepsLine(
 		finishAt := &result.FinishedAt
 		duration := finishAt.Sub(*startedAt).Milliseconds()
 
+		outputs := map[string]string{}
+		for _, att := range result.Attachments {
+			if att.MimeType == "text/plain" {
+				outputs[att.Name] = string(att.Data)
+			}
+		}
+
 		stepLine.StepResult = &stepResult{
 			StartedAt:  startedAt,
 			FinishedAt: finishAt,
 			Duration:   duration,
 			Status:     int(result.Status),
 			Err:        result.Err,
+			Outputs:    outputs,
 		}
 	}
 }
@@ -137,9 +147,71 @@ func findStepLine(file *fileProc, stepID string) *lineProc {
 	return nil
 }
 
+func complementLine(file *fileProc) {
+	var preLine *lineProc
+	for _, line := range file.Lines {
+		line.file = file
+
+		if line.LineType == LineTypeComment && preLine != nil {
+			result := *preLine.StepResult
+			result.Outputs = nil
+			line.StepResult = &result
+		}
+
+		if line.LineType == LineTypeDocString && preLine != nil {
+			result := *preLine.StepResult
+			result.Outputs = nil
+			line.StepResult = &result
+		}
+
+		preLine = line
+	}
+}
+
 type fileProc struct {
 	URI   string
 	Lines []*lineProc
+}
+
+func (l *fileProc) HTMLClass() string {
+	classess := []string{}
+
+	for _, line := range l.Lines {
+		if line.LineType == LineTypeStep &&
+			line.StepResult != nil &&
+			line.StepResult.Status == LineStatusFailed {
+			classess = append(classess, LineStatusFailedStr)
+			break
+		}
+	}
+
+	//revive:disable:add-constant
+	if len(classess) == 0 {
+		classess = append(classess, LineStatusPassedStr)
+	}
+	//revive:enable:add-constant
+
+	return strings.Join(classess, " ")
+}
+
+func (l *fileProc) Count(status int) int {
+	//revive:disable:add-constant
+	count := 0
+	//revive:enable:add-constant
+
+	for _, line := range l.Lines {
+		if line.LineType != LineTypeStep {
+			continue
+		}
+
+		if line.StepResult.Status != status {
+			continue
+		}
+
+		count++
+	}
+
+	return count
 }
 
 func collectFileInDocument(doc *messages.GherkinDocument) *fileProc {
@@ -181,7 +253,26 @@ const (
 	LineTypeExamples   LineType = "examples"
 )
 
+const (
+	LineStatusPassed    int = 0
+	LineStatusFailed    int = 1
+	LineStatusSkipped   int = 2
+	LineStatusUndefined int = 3
+	LineStatusPending   int = 4
+	LineStatusAmbiguous int = 5
+)
+
+const (
+	LineStatusPassedStr    string = "passed"
+	LineStatusFailedStr    string = "failed"
+	LineStatusSkippedStr   string = "skipped"
+	LineStatusUndefinedStr string = "undefined"
+	LineStatusPendingStr   string = "pending"
+	LineStatusAmbiguousStr string = "ambiguous"
+)
+
 type lineProc struct {
+	file        *fileProc
 	LineType    LineType
 	ID          string
 	Location    messages.Location
@@ -199,30 +290,30 @@ type stepResult struct {
 	Duration   int64
 	Status     int
 	Err        error
+	Outputs    map[string]string
+}
+
+func (l *lineProc) HasOutputs() bool {
+	//revive:disable:add-constant
+	return l.StepResult != nil && len(l.StepResult.Outputs) != 0
+	//revive:enable:add-constant
+}
+
+func (l *lineProc) HasSummary() bool {
+	return l.LineType == LineTypeFeature || l.LineType == LineTypeScenario
 }
 
 func (l *lineProc) HTMLClass() string {
 	classess := []string{string(l.LineType)}
+	targetTypes := []LineType{
+		LineTypeStep,
+		LineTypeDocString,
+	}
 
-	if l.StepResult != nil {
-		//revive:disable:add-constant
-		switch l.StepResult.Status {
-		case 0:
-			classess = append(classess, "passed")
-		case 1:
-			classess = append(classess, "failed")
-		case 2:
-			classess = append(classess, "skipped")
-		case 3:
-			classess = append(classess, "undefined")
-		case 4:
-			classess = append(classess, "pending")
-		case 5:
-			classess = append(classess, "ambiguous")
-		default:
-			classess = append(classess, "unknown")
-		}
-		//revive:enable:add-constant
+	if slices.Contains(targetTypes, l.LineType) && l.StepResult != nil {
+		classess = append(classess, l.StepResult.HTMLClass())
+	} else {
+		classess = append(classess, "unknown")
 	}
 
 	return strings.Join(classess, " ")
@@ -246,7 +337,7 @@ func (l *lineProc) HTMLLine() string {
 			LineTypeBackground,
 			LineTypeScenario,
 		}, l.LineType) {
-			text += "\n"
+			text += ": "
 		}
 	}
 
@@ -254,6 +345,57 @@ func (l *lineProc) HTMLLine() string {
 	text += l.Text
 
 	return text
+}
+
+//revive:disable:cognitive-complexity
+
+func (l *lineProc) Count(status int) int {
+	//revive:disable:add-constant
+	count := 0
+	//revive:enable:add-constant
+
+	for _, line := range l.file.Lines {
+		if line.Location.Line <= l.Location.Line {
+			continue
+		}
+
+		if line.LineType == l.LineType {
+			break
+		}
+
+		if line.LineType != LineTypeStep {
+			continue
+		}
+
+		if line.StepResult.Status != status {
+			continue
+		}
+
+		count++
+	}
+
+	return count
+}
+
+//revive:enable:cognitive-complexity
+
+func (s *stepResult) HTMLClass() string {
+	switch s.Status {
+	case LineStatusPassed:
+		return "passed"
+	case LineStatusFailed:
+		return "failed"
+	case LineStatusSkipped:
+		return "skipped"
+	case LineStatusUndefined:
+		return "undefined"
+	case LineStatusPending:
+		return "pending"
+	case LineStatusAmbiguous:
+		return "ambiguous"
+	default:
+		return "unknown"
+	}
 }
 
 type sortLinesByLocation []*lineProc
@@ -468,10 +610,33 @@ func collectLinesInDocString(doc *messages.DocString) []*lineProc {
 		return lines
 	}
 
+	// before """
+	before := *doc.Location
 	lines = append(lines, &lineProc{
 		LineType: LineTypeDocString,
-		Location: *doc.Location,
-		Text:     doc.Content,
+		Location: before,
+		Text:     "\"\"\"",
+	})
+
+	// data
+	loc := before
+	for i, line := range strings.Split(doc.Content, "\n") {
+		loc = before
+		loc.Line += int64(i + 1)
+		lines = append(lines, &lineProc{
+			LineType: LineTypeDocString,
+			Location: loc,
+			Text:     line,
+		})
+	}
+
+	// after """
+	after := loc
+	after.Line++
+	lines = append(lines, &lineProc{
+		LineType: LineTypeDocString,
+		Location: after,
+		Text:     "\"\"\"",
 	})
 
 	// TODO DataTable
@@ -513,13 +678,28 @@ func collectLinesInExample(examples *messages.Examples) []*lineProc {
 //go:embed html.tmpl
 var htmlTmpl string
 
+type htmlTmplData struct {
+	Files       []*fileProc
+	PassedCount int
+	FailedCount int
+}
+
 func marshalHTML(files []*fileProc, out io.Writer) error {
 	t, err := template.New("gherkin").Parse(htmlTmpl)
 	if err != nil {
 		return err
 	}
 
-	err = t.Execute(out, files)
+	data := htmlTmplData{
+		Files: files,
+	}
+
+	for _, file := range files {
+		data.PassedCount += file.Count(LineStatusPassed)
+		data.FailedCount += file.Count(LineStatusFailed)
+	}
+
+	err = t.Execute(out, data)
 	if err != nil {
 		return err
 	}

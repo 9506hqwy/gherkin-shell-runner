@@ -1,64 +1,215 @@
 <html>
-<head>
+  <head>
     <meta charset="utf-8" />
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100vw;
-        }
-        td {
-            border: 1px solid #dddddd;
-        }
-        tr:hover {
-            background-color: #dddddd;
-        }
-        td.line-num {
-            width: 90px;
-            padding-right: 10px;
-            text-align: right;
-        }
-        td.text {
-            padding-left: 10px;
-        }
-        .comment {
-            background-color: #dddddd;
-        }
-        .passed {
-            background-color: #c7edd0;
-        }
-        .failed {
-            background-color: #f2cbcf;
-        }
-        .skipped {
-            background-color: #bde8f2;
-        }
-        p.ws.indent {
-            display: inline-block;
-        }
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      h1 {
+        text-align: center;
+      }
+      div.summary {
+        padding: 0px 30px 0px 0px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+      }
+      div.summary p {
+        margin: 3px;
+        padding: 3px;
+      }
+      article {
+        margin: 5px;
+        padding: 5px;
+        border: 1px solid #dddddd;
+        border-radius: 10px;
+      }
+      article:has(details.feature[open]) {
+        background-color: #fffaf0;
+      }
+      details.feature {
+        margin: 5px;
+      }
+      summary.feature {
+        padding: 3px;
+        width: 100%;
+        font-size: 1.2em;
+        font-weight: bold;
+        display: inline-flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+      summary.feature:hover {
+        cursor: pointer;
+      }
+      summary.feature span.passed {
+        font-size: 0.8em;
+        display: none;
+      }
+      details.feature[open] summary.feature span.passed {
+        padding: 3px;
+        display: inline-block;
+      }
+      summary.feature span.failed {
+        font-size: 0.8em;
+        display: none;
+      }
+      details.feature[open] summary.feature span.failed {
+        padding: 3px;
+        display: inline-block;
+      }
+      details.step {
+        width: 100%;
+      }
+      details.step div {
+        margin: 5px;
+        background-color: #ffffff;
+      }
+      summary.step {
+        width: 100%;
+        display: inline-flex;
+        flex-direction: row;
+        align-items: center;
+        color: #4682b4;
+        text-decoration: underline;
+      }
+      summary.step:hover {
+        cursor: pointer;
+      }
+      details.step[open] summary.step {
+        color: #000000;
+        text-decoration: none;
+      }
+      section {
+        margin-top: 10px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        background-color: #ffffff;
+      }
+      td {
+        border: 1px solid #dddddd;
+      }
+      tr:hover {
+        background-color: #fff8dc;
+      }
+      td.line-num {
+        width: 90px;
+        padding-right: 10px;
+        text-align: right;
+      }
+      td.text {
+        padding: 3px 3px 3px 10px;
+      }
+      td.text div.text {
+        width: 100%;
+        display: inline-flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+      td.text div.text span.text {
+        display: inline-flex;
+        flex-direction: row;
+        align-items: center;
+      }
+      td.text div.text span.passed {
+        padding: 3px;
+        font-size: 0.8em;
+      }
+      td.text div.text span.failed {
+        margin-right: 5px;
+        padding: 3px;
+        font-size: 0.8em;
+      }
+      .passed {
+        background-color: #c7edd0;
+      }
+      .failed {
+        background-color: #f2cbcf;
+      }
+      .skipped {
+        background-color: #bde8f2;
+      }
+      .feature {
+        font-size: 1.1em;
+        font-weight: bold;
+      }
+      .scenario {
+        font-size: 1.1em;
+        font-weight: bold;
+      }
+      .comment {
+        background-color: #dddddd;
+      }
+      p.ws.indent {
+        margin: 0px;
+        display: inline-block;
+      }
     </style>
-</head>
-<body>
-{{range .}}
-    <article>
-        <h1>{{.URI}}</h1>
+  </head>
+  <body>
+  <h1>Gherkin Shell Runner Report</h1>
+  <div class="summary">
+    <p class="passed">Total Passed: {{.PassedCount}}</p>
+    <p class="failed">Total Failed: {{.FailedCount}}</p>
+  </div>
+  {{range .Files}}
+    <article class="{{.HTMLClass}}">
+      <details class="feature">
+        <summary class="feature">
+          <span class="name">{{.URI}}</span>
+          <span>
+              <span class="passed">Passed: {{.Count 0}}</span>
+              <span class="failed">Failed: {{.Count 1}}</span>
+          </span>
+        </summary>
         <section>
-            <table>
-                {{range .Lines}}
-                <tr class="{{.HTMLClass}}">
-                    <td class="line-num">{{.Location.Line}}</td>
-                    <td class="text">
+          <table>
+              {{range .Lines}}
+              <tr class="{{.HTMLClass}}">
+                <td class="line-num">{{.Location.Line}}</td>
+                <td class="text">
+                  {{if .HasOutputs}}
+                    <details class="step">
+                      <summary class="step">
                         <p class="ws indent" style="width: {{ .HTMLIndent }}em;"></p>
                         {{.HTMLLine}}
-                    </td>
-                </tr>
-                {{end}}
-            </table>
+                      </summary>
+                      <div class="outputs">
+                        {{range $name, $content := .StepResult.Outputs}}
+                          <p><strong>{{$name}}:</strong></p>
+                          <pre>{{$content}}</pre>
+                        {{end}}
+                      </div>
+                    </details>
+                  {{else}}
+                    {{if .HasSummary}}
+                      <div class="text">
+                        <span class="text">
+                          <p class="ws indent" style="width: {{ .HTMLIndent }}em;"></p>
+                          <span>{{.HTMLLine}}</span>
+                        </span>
+                        <span>
+                            <span class="passed">Passed: {{.Count 0}}</span>
+                            <span class="failed">Failed: {{.Count 1}}</span>
+                        </span>
+                      </div>
+                    {{else}}
+                      <p class="ws indent" style="width: {{ .HTMLIndent }}em;"></p>
+                      <span>{{.HTMLLine}}</span>
+                    {{end}}
+                  {{end}}
+                </td>
+                <td class="duration">{{or (and .StepResult .StepResult.Duration) 0}} msec</td>
+              </tr>
+              {{end}}
+          </table>
         </section>
+      </details>
     </article>
-{{end}}
-</body>
+  {{end}}
+  </body>
 </html>

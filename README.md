@@ -94,7 +94,6 @@ Flags:
 ## TODO
 
 - Wait for complete output correctly.
-- More information in HTML report.
 - Input encoding.
 - Timeout handling.
 - Newline handling.
