@@ -11,24 +11,27 @@ const ZERO = 0
 const EmptyString = ""
 const DefaultWait = 30
 const DefaultTimeout = 60 * 1000
+const DefaultFilePerm os.FileMode = 0644
 
 type tuiFeatureKey struct{}
 
 type tuiFeature struct {
-	workspace     string
-	envs          map[string]string
-	command       string
-	args          []string
-	stdin         string
-	exitCode      int
-	output        []byte
-	wait          int
-	timeout       int
-	size          *TerminalSize
-	ouputEncoding string
-	stdinEncoding string
-	delWorkspace  bool
-	vars          map[string]string
+	workspace      string
+	envs           map[string]string
+	command        string
+	args           []string
+	stdin          string
+	exitCode       int
+	output         []byte
+	wait           int
+	timeout        int
+	size           *TerminalSize
+	ouputEncoding  string
+	stdinEncoding  string
+	fileEncoding   string
+	filePermission os.FileMode
+	delWorkspace   bool
+	vars           map[string]string
 }
 
 type TerminalSize struct {
@@ -51,6 +54,8 @@ func initTuituiFeature(t *tuiFeature) *tuiFeature {
 	t.size = nil
 	t.ouputEncoding = EmptyString
 	t.stdinEncoding = EmptyString
+	t.fileEncoding = EmptyString
+	t.filePermission = DefaultFilePerm
 	t.delWorkspace = false
 
 	if t.vars == nil {
@@ -119,8 +124,14 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^size (\d+) (\d+)$`, setSize)
 	ctx.Step(`^encoding output (.+)$`, setOutputEncoding)
 	ctx.Step(`^encoding stdin (.+)$`, setStdinEncoding)
+	ctx.Step(`^encoding file (.+)$`, setFileEncoding)
 	ctx.Step(`^use temp workspace$`, setTempWorkspace)
 	ctx.Step(`^set ([A-Za-z][0-9A-Za-z_]*) (.+)$`, setVariable)
+
+	ctx.Step(`^read file (.+) to ([A-Za-z][0-9A-Za-z_]*)$`, readFile)
+	ctx.Step(`^write file (.+) from ([A-Za-z][0-9A-Za-z_]*)$`, writeFileLine)
+	ctx.Step(`^write file (.+)$`, writeFileBlock)
+	ctx.Step(`^chmod (\d+) file$`, setFilePermission)
 
 	ctx.When(`^exec$`, execCommand)
 

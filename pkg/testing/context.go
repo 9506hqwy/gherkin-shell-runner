@@ -3,6 +3,8 @@ package testing
 import (
 	"context"
 	"os"
+	"path/filepath"
+	"strconv"
 
 	"github.com/cucumber/godog"
 )
@@ -135,6 +137,15 @@ func setStdinEncoding(
 	return ctx, nil
 }
 
+func setFileEncoding(
+	ctx context.Context,
+	encoding string,
+) (context.Context, error) {
+	t := getTuiFeature(ctx)
+	t.fileEncoding = encoding
+	return ctx, nil
+}
+
 func setTempWorkspace(ctx context.Context) (context.Context, error) {
 	temp, err := os.MkdirTemp("", "gsr-")
 	if err != nil {
@@ -160,5 +171,118 @@ func setVariable(
 	}
 
 	t.vars[name] = v
+	return ctx, nil
+}
+
+func readFile(
+	ctx context.Context,
+	path string,
+	variableName string,
+) (context.Context, error) {
+	t := getTuiFeature(ctx)
+
+	p, err := parseValueOne(t, path)
+	if err != nil {
+		return ctx, err
+	}
+
+	if t.workspace != EmptyString {
+		p = filepath.Join(t.workspace, p)
+	}
+
+	content, err := os.ReadFile(p)
+	if err != nil {
+		return ctx, err
+	}
+
+	ctx = setFile(ctx, p, content)
+
+	value, err := decodingToBytes(t.fileEncoding, content)
+	if err != nil {
+		return ctx, err
+	}
+
+	t.vars[variableName] = string(value)
+	return ctx, nil
+}
+
+func writeFileBlock(
+	ctx context.Context,
+	path string,
+	content *godog.DocString,
+) (context.Context, error) {
+	return writeFile(ctx, path, content.Content)
+}
+
+func writeFileLine(
+	ctx context.Context,
+	path string,
+	content string,
+) (context.Context, error) {
+	t := getTuiFeature(ctx)
+
+	c, err := parseValueOne(t, content)
+	if err != nil {
+		return ctx, err
+	}
+
+	return writeFile(ctx, path, c)
+}
+
+func writeFile(
+	ctx context.Context,
+	path string,
+	content string,
+) (context.Context, error) {
+	t := getTuiFeature(ctx)
+
+	p, err := parseValueOne(t, path)
+	if err != nil {
+		return ctx, err
+	}
+
+	if t.workspace != EmptyString {
+		p = filepath.Join(t.workspace, p)
+	}
+
+	ctx = setFile(ctx, p, []byte(content))
+
+	body, err := encodingToBytes(t.fileEncoding, content)
+	if err != nil {
+		return ctx, err
+	}
+
+	return ctx, os.WriteFile(p, body, t.filePermission)
+}
+
+func setFile(
+	ctx context.Context,
+	path string,
+	body []byte,
+) context.Context {
+	attachment := godog.Attachment{
+		Body:      body,
+		FileName:  path,
+		MediaType: attachmentMime,
+	}
+
+	return godog.Attach(ctx, attachment)
+}
+
+func setFilePermission(
+	ctx context.Context,
+	permission string,
+) (context.Context, error) {
+	t := getTuiFeature(ctx)
+
+	//revive:disable:add-constant
+	perm, err := strconv.ParseInt(permission, 8, 32)
+	//revive:enable:add-constant
+	if err != nil {
+		return ctx, err
+	}
+
+	t.filePermission = os.FileMode(perm)
+
 	return ctx, nil
 }

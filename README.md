@@ -43,9 +43,14 @@ Example:
 - `Given wait <milli second>`
 - `Given timeout <milli second>`
 - `Given size <width> <height>`
+- `Given encoding file <encoding>`
 - `Given encoding output <encoding>`
 - `Given use temp workspace`
 - `Given set <name> <value>`
+- `Given read file <path> to <variable>`
+- `Given write file <path>` followed by a doc string block
+- `Given write file <path> from <variable>`
+- `Given chmod <permission> file`
 
 ### Act
 
@@ -97,6 +102,5 @@ Flags:
 - Input encoding.
 - Timeout handling.
 - Newline handling.
-- File operation
 - Expression
 - DataTable
