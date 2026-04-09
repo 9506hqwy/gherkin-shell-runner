@@ -65,6 +65,14 @@ func initTuituiFeature(t *tuiFeature) *tuiFeature {
 	return t
 }
 
+func resetTuituiFeature(t *tuiFeature) *tuiFeature {
+	t.args = make([]string, ZERO)
+	t.stdin = EmptyString
+	t.exitCode = ZERO
+	t.output = make([]byte, ZERO)
+	return t
+}
+
 func getTuiFeature(ctx context.Context) *tuiFeature {
 	t, ok := ctx.Value(tuiFeatureKey{}).(*tuiFeature)
 	if !ok {
@@ -114,6 +122,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Given(`^command (.+)$`, setCommand)
 
 	ctx.Step(`^workspace (.+)$`, setWorkspace)
+	ctx.Step(`^env$`, setEnvironmentTable)
 	ctx.Step(`^env ([^ ]+) (.+)$`, setEnvironment)
 	ctx.Step(`^arg (.+)$`, setArgument)
 	ctx.Step(`^stdin$`, setStdinBlock)

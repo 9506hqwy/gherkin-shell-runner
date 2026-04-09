@@ -37,6 +37,7 @@ Example:
 - `Given command <command>`
 - `Given workspace <path>`
 - `Given env <name> <value>`
+- `Given env` followed by a data table block
 - `Given arg <argument>`
 - `Given stdin <text>`
 - `Given stdin` followed by a doc string block
@@ -103,4 +104,4 @@ Flags:
 - Timeout handling.
 - Newline handling.
 - Expression
-- DataTable
+- Examples to HTML format.

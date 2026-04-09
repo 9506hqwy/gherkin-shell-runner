@@ -2,6 +2,7 @@ package formatter
 
 import (
 	_ "embed"
+	"fmt"
 	"html/template"
 	"io"
 	"slices"
@@ -43,16 +44,12 @@ func (f *htmlFmt) Summary() {
 
 		pickles := f.Storage.MustGetPickles(feature.Uri)
 		for _, scenarioPickle := range pickles {
-			scenarioLine := f.setScenarioLine(
+			f.setResult(
 				feature.FindScenario,
-				scenarioPickle,
-				file,
-			)
-			f.setStepsLine(
+				feature.FindExample,
 				feature.FindStep,
 				scenarioPickle,
 				file,
-				scenarioLine,
 			)
 		}
 
@@ -65,8 +62,30 @@ func (f *htmlFmt) Summary() {
 	}
 }
 
+func (f *htmlFmt) setResult(
+	findScenario func(id string) *messages.Scenario,
+	findExample func(id string) (*messages.Examples, *messages.TableRow),
+	findStep func(id string) *messages.Step,
+	scenarioPickle *messages.Pickle,
+	file *fileProc,
+) {
+	scenarioLine := f.setScenarioLine(
+		findScenario,
+		findExample,
+		scenarioPickle,
+		file,
+	)
+	f.setStepsLine(
+		findStep,
+		scenarioPickle,
+		file,
+		scenarioLine,
+	)
+}
+
 func (f *htmlFmt) setScenarioLine(
 	findScenario func(id string) *messages.Scenario,
+	findExample func(id string) (*messages.Examples, *messages.TableRow),
 	pickle *messages.Pickle,
 	file *fileProc,
 ) *lineProc {
@@ -78,6 +97,16 @@ func (f *htmlFmt) setScenarioLine(
 	scenarioLine.StepResult = &stepResult{
 		StartedAt: &result.StartedAt,
 	}
+
+	//revive:disable:add-constant
+	if len(pickle.AstNodeIds) == 1 {
+		return scenarioLine
+	}
+	//revive:enable:add-constant
+
+	_, row := findExample(pickle.AstNodeIds[1])
+	scenarioLine.ExampleLocation = row.Location
+
 	return scenarioLine
 }
 
@@ -148,17 +177,20 @@ func findStepLine(file *fileProc, stepID string) *lineProc {
 }
 
 func complementLine(file *fileProc) {
+	inheritLines := []LineType{
+		LineTypeComment,
+		LineTypeDocString,
+		LineTypeTableHeader,
+		LineTypeTableRow,
+	}
+
 	var preLine *lineProc
 	for _, line := range file.Lines {
 		line.file = file
 
-		if line.LineType == LineTypeComment && preLine != nil {
-			result := *preLine.StepResult
-			result.Outputs = nil
-			line.StepResult = &result
-		}
-
-		if line.LineType == LineTypeDocString && preLine != nil {
+		if slices.Contains(inheritLines, line.LineType) &&
+			preLine != nil &&
+			preLine.StepResult != nil {
 			result := *preLine.StepResult
 			result.Outputs = nil
 			line.StepResult = &result
@@ -242,15 +274,17 @@ func collectFileInDocument(doc *messages.GherkinDocument) *fileProc {
 type LineType string
 
 const (
-	LineTypeComment    LineType = "comment"
-	LineTypeTag        LineType = "tag"
-	LineTypeFeature    LineType = "feature"
-	LineTypeRule       LineType = "rule"
-	LineTypeBackground LineType = "background"
-	LineTypeScenario   LineType = "scenario"
-	LineTypeStep       LineType = "step"
-	LineTypeDocString  LineType = "docstring"
-	LineTypeExamples   LineType = "examples"
+	LineTypeComment     LineType = "comment"
+	LineTypeTag         LineType = "tag"
+	LineTypeFeature     LineType = "feature"
+	LineTypeRule        LineType = "rule"
+	LineTypeBackground  LineType = "background"
+	LineTypeScenario    LineType = "scenario"
+	LineTypeStep        LineType = "step"
+	LineTypeDocString   LineType = "docstring"
+	LineTypeExamples    LineType = "examples"
+	LineTypeTableHeader LineType = "tableheader"
+	LineTypeTableRow    LineType = "tablerow"
 )
 
 const (
@@ -272,16 +306,17 @@ const (
 )
 
 type lineProc struct {
-	file        *fileProc
-	LineType    LineType
-	ID          string
-	Location    messages.Location
-	Tags        []*messages.Tag
-	Keyword     string
-	Name        string
-	Description string
-	Text        string
-	StepResult  *stepResult
+	file            *fileProc
+	LineType        LineType
+	ID              string
+	Location        messages.Location
+	Tags            []*messages.Tag
+	Keyword         string
+	Name            string
+	Description     string
+	Text            string
+	StepResult      *stepResult
+	ExampleLocation *messages.Location
 }
 
 type stepResult struct {
@@ -308,6 +343,8 @@ func (l *lineProc) HTMLClass() string {
 	targetTypes := []LineType{
 		LineTypeStep,
 		LineTypeDocString,
+		LineTypeTableHeader,
+		LineTypeTableRow,
 	}
 
 	if slices.Contains(targetTypes, l.LineType) && l.StepResult != nil {
@@ -343,6 +380,10 @@ func (l *lineProc) HTMLLine() string {
 
 	text += l.Name
 	text += l.Text
+
+	if l.ExampleLocation != nil {
+		text += fmt.Sprintf(" (Example L.%d)", l.ExampleLocation.Line)
+	}
 
 	return text
 }
@@ -598,7 +639,13 @@ func collectLinesInStep(step *messages.Step) []*lineProc {
 	docStringLines := collectLinesInDocString(step.DocString)
 	lines = append(lines, docStringLines...)
 
-	// TODO: DataTable
+	if step.DataTable != nil {
+		tableLines := collectLinesInTableRows(
+			step.DataTable.Rows,
+			LineTypeTableRow,
+		)
+		lines = append(lines, tableLines...)
+	}
 
 	return lines
 }
@@ -670,7 +717,49 @@ func collectLinesInExample(examples *messages.Examples) []*lineProc {
 		Name:     examples.Name,
 	})
 
-	// TODO: TableHeader / TableBody
+	header := collectLinesInTableRow(examples.TableHeader, LineTypeTableHeader)
+	lines = append(lines, header...)
+
+	body := collectLinesInTableRows(examples.TableBody, LineTypeTableRow)
+	lines = append(lines, body...)
+
+	return lines
+}
+
+func collectLinesInTableRows(
+	rows []*messages.TableRow,
+	lineType LineType,
+) []*lineProc {
+	var lines []*lineProc
+
+	for _, row := range rows {
+		r := collectLinesInTableRow(row, lineType)
+		lines = append(lines, r...)
+	}
+
+	return lines
+}
+
+func collectLinesInTableRow(
+	row *messages.TableRow,
+	lineType LineType,
+) []*lineProc {
+	var lines []*lineProc
+
+	if row == nil {
+		return lines
+	}
+
+	values := []string{}
+	for _, c := range row.Cells {
+		values = append(values, c.Value)
+	}
+
+	lines = append(lines, &lineProc{
+		LineType: lineType,
+		Location: *row.Location,
+		Text:     fmt.Sprintf("| %s |", strings.Join(values, " | ")),
+	})
 
 	return lines
 }

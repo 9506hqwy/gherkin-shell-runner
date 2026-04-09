@@ -2,6 +2,7 @@ package testing
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -11,7 +12,7 @@ import (
 
 func setCommand(ctx context.Context, command string) (context.Context, error) {
 	t := getTuiFeature(ctx)
-	initTuituiFeature(t)
+	resetTuituiFeature(t)
 
 	cmd, err := parseValueOne(t, command)
 	if err != nil {
@@ -35,6 +36,28 @@ func setWorkspace(
 
 	if !t.delWorkspace {
 		t.workspace = os.ExpandEnv(ws)
+	}
+
+	return ctx, nil
+}
+
+func setEnvironmentTable(
+	ctx context.Context,
+	table *godog.Table,
+) (context.Context, error) {
+	var err error
+
+	for _, row := range table.Rows {
+		//revive:disable:add-constant
+		if len(row.Cells) != 2 {
+			return ctx, errors.New("invalid format data table")
+		}
+		//revive:enable:add-constant
+
+		ctx, err = setEnvironment(ctx, row.Cells[0].Value, row.Cells[1].Value)
+		if err != nil {
+			return ctx, err
+		}
 	}
 
 	return ctx, nil
