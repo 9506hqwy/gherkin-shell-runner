@@ -12,7 +12,7 @@ import (
 
 func setCommand(ctx context.Context, command string) (context.Context, error) {
 	t := getTuiFeature(ctx)
-	resetTuituiFeature(t)
+	resetTuiFeature(t)
 
 	cmd, err := parseValueOne(t, command)
 	if err != nil {

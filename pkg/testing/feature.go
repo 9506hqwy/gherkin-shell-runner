@@ -39,7 +39,7 @@ type TerminalSize struct {
 	height int
 }
 
-func initTuituiFeature(t *tuiFeature) *tuiFeature {
+func initTuiFeature(t *tuiFeature) *tuiFeature {
 	_ = cleanTuiFeature(t)
 
 	t.workspace = EmptyString
@@ -65,7 +65,7 @@ func initTuituiFeature(t *tuiFeature) *tuiFeature {
 	return t
 }
 
-func resetTuituiFeature(t *tuiFeature) *tuiFeature {
+func resetTuiFeature(t *tuiFeature) *tuiFeature {
 	t.args = make([]string, ZERO)
 	t.stdin = EmptyString
 	t.exitCode = ZERO
@@ -85,7 +85,7 @@ func getTuiFeature(ctx context.Context) *tuiFeature {
 func setTuiFeature(ctx context.Context) context.Context {
 	t := tuiFeature{}
 
-	initTuituiFeature(&t)
+	initTuiFeature(&t)
 
 	return context.WithValue(ctx, tuiFeatureKey{}, &t)
 }
