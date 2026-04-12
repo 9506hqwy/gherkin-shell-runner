@@ -3,6 +3,7 @@ Feature: echo command
     Run echo command in Linux.
 
     Background:
+        # set environment variable.
         * env KEY "value"
 
     Scenario: echo text

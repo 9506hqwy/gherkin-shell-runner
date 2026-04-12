@@ -104,4 +104,3 @@ Flags:
 - Timeout handling.
 - Newline handling.
 - Expression
-- Examples to HTML format.
