@@ -24,10 +24,16 @@ go build -o bin/gherkin-shell-runner ./cmd/gherkin-shell-runner
 ./bin/gherkin-shell-runner [flags] [feature_files_or_directories]
 ```
 
-Example:
+Example: Run all scenario.
 
 ```sh
 ./bin/gherkin-shell-runner examples/features
+```
+
+Example: Run scenario with `linux` tags and without `ignore` tag.
+
+```sh
+./bin/gherkin-shell-runner examples/features --tags "@linux && ~@ignore"
 ```
 
 ## Supported Step Definitions
@@ -96,6 +102,15 @@ Flags:
       --tags string        Filter scenario. (default "~@ignore")
   -v, --version            version for gherkin-shell-runner
 ```
+
+format:
+
+- cucumber
+- events
+- html
+- junit
+- pretty
+- progress
 
 ## TODO
 
