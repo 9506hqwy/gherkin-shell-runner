@@ -3,6 +3,7 @@ package testing
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 
@@ -183,6 +184,24 @@ func checkOutputRegex(
 			"expected Output to match: '%s', but actual is: '%s'",
 			pattern,
 			t.output)
+	}
+
+	return ctx, nil
+}
+
+func checkTimedOut(ctx context.Context) (context.Context, error) {
+	timeout, ok := ctx.Value(timeoutKey{}).(bool)
+	if !ok || !timeout {
+		return ctx, errors.New("expected to be timed out, but not")
+	}
+
+	return ctx, nil
+}
+
+func checkTimedNotOut(ctx context.Context) (context.Context, error) {
+	timeout, ok := ctx.Value(timeoutKey{}).(bool)
+	if ok && timeout {
+		return ctx, errors.New("expected to not be timed out, but was")
 	}
 
 	return ctx, nil

@@ -35,13 +35,24 @@ func runFeature(
 		return ctx, err
 	}
 
-	cmd, cancel := createComand(ctx, t, &ptmx)
+	cmd, cancel, cmdCtxErr := createComand(ctx, t, &ptmx)
 	defer cancel()
 
 	output, err := runCommand(t, &ptmx, cmd)
 
+	if cmdCtxErr() == context.DeadlineExceeded {
+		// cmd.Wait() do not returns context.DeadlineExceeded
+		// when the context deadline is exceeded at unix system,
+		// because cmd.Cancel() kill the process ?
+		// https://github.com/golang/go/issues/21880
+		ctx = setError(ctx, t, cmdCtxErr())
+		ctx = context.WithValue(ctx, timeoutKey{}, true)
+		err = nil
+	}
+
 	if err == context.DeadlineExceeded {
 		ctx = setError(ctx, t, err)
+		ctx = context.WithValue(ctx, timeoutKey{}, true)
 		err = nil
 	}
 
@@ -67,7 +78,7 @@ func createComand(
 	ctx context.Context,
 	t *tuiFeature,
 	ptmx *pty.Pty,
-) (*pty.Cmd, context.CancelFunc) {
+) (*pty.Cmd, context.CancelFunc, func() error) {
 	deadline, cancel := context.WithTimeout(
 		ctx,
 		time.Duration(t.timeout)*time.Millisecond,
@@ -85,7 +96,9 @@ func createComand(
 		cmd.Dir = t.workspace
 	}
 
-	return cmd, cancel
+	return cmd, cancel, func() error {
+		return deadline.Err()
+	}
 }
 
 func runCommand(

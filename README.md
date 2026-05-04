@@ -77,6 +77,8 @@ Example: Run scenario with `linux` tags and without `ignore` tag.
 - `Then output regex` followed by a doc string block
 - `Then output not regex <text>`
 - `Then output not regex` followed by a doc string block
+- `Then timed is out`
+- `Then timed is not out`
 
 ## Example Feature
 
@@ -116,6 +118,5 @@ format:
 
 - Wait for complete output correctly.
 - Input encoding.
-- Timeout handling.
 - Newline handling.
 - Expression

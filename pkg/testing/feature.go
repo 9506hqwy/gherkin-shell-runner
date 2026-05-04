@@ -14,6 +14,7 @@ const DefaultTimeout = 60 * 1000
 const DefaultFilePerm os.FileMode = 0644
 
 type tuiFeatureKey struct{}
+type timeoutKey struct{}
 
 type tuiFeature struct {
 	workspace      string
@@ -157,4 +158,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^output regex (.+)$`, checkOutputRegexLine)
 	ctx.Step(`^output not regex$`, checkOutputNotRegexBlock)
 	ctx.Step(`^output not regex (.+)$`, checkOutputNotRegexLine)
+
+	ctx.Step(`^timed is out$`, checkTimedOut)
+	ctx.Step(`^timed is not out$`, checkTimedNotOut)
 }
