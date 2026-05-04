@@ -109,7 +109,7 @@ func checkOutputEq(
 	mode CompareMode,
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
-	expectedBytes, err := encodingToBytes(t.ouputEncoding, expect)
+	expectedBytes, err := encodingToBytes(t.outputEncoding, expect)
 	if err != nil {
 		return ctx, err
 	}
@@ -174,7 +174,7 @@ func checkOutputRegex(
 	re := regexp.MustCompile(pattern)
 
 	t := getTuiFeature(ctx)
-	outputBytes, err := decodingToBytes(t.ouputEncoding, t.output)
+	outputBytes, err := decodingToBytes(t.outputEncoding, t.output)
 	if err != nil {
 		return ctx, err
 	}

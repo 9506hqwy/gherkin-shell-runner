@@ -147,7 +147,7 @@ func setOutputEncoding(
 	encoding string,
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
-	t.ouputEncoding = encoding
+	t.outputEncoding = encoding
 	return ctx, nil
 }
 

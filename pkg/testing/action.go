@@ -35,7 +35,7 @@ func runFeature(
 		return ctx, err
 	}
 
-	cmd, cancel, cmdCtxErr := createComand(ctx, t, &ptmx)
+	cmd, cancel, cmdCtxErr := createCommand(ctx, t, &ptmx)
 	defer cancel()
 
 	output, err := runCommand(t, &ptmx, cmd)
@@ -74,7 +74,7 @@ func runFeature(
 	return ctx, err
 }
 
-func createComand(
+func createCommand(
 	ctx context.Context,
 	t *tuiFeature,
 	ptmx *pty.Pty,

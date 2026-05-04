@@ -27,7 +27,7 @@ type tuiFeature struct {
 	wait           int
 	timeout        int
 	size           *TerminalSize
-	ouputEncoding  string
+	outputEncoding string
 	stdinEncoding  string
 	fileEncoding   string
 	filePermission os.FileMode
@@ -53,7 +53,7 @@ func initTuiFeature(t *tuiFeature) *tuiFeature {
 	t.wait = DefaultWait
 	t.timeout = DefaultTimeout
 	t.size = nil
-	t.ouputEncoding = EmptyString
+	t.outputEncoding = EmptyString
 	t.stdinEncoding = EmptyString
 	t.fileEncoding = EmptyString
 	t.filePermission = DefaultFilePerm
