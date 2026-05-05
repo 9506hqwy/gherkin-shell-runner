@@ -21,7 +21,7 @@ type tuiFeature struct {
 	envs           map[string]string
 	command        string
 	args           []string
-	stdin          string
+	stdin          []byte
 	exitCode       int
 	output         []byte
 	wait           int
@@ -47,7 +47,7 @@ func initTuiFeature(t *tuiFeature) *tuiFeature {
 	t.envs = make(map[string]string)
 	t.command = EmptyString
 	t.args = make([]string, ZERO)
-	t.stdin = EmptyString
+	t.stdin = make([]byte, ZERO)
 	t.exitCode = ZERO
 	t.output = make([]byte, ZERO)
 	t.wait = DefaultWait
@@ -68,7 +68,7 @@ func initTuiFeature(t *tuiFeature) *tuiFeature {
 
 func resetTuiFeature(t *tuiFeature) *tuiFeature {
 	t.args = make([]string, ZERO)
-	t.stdin = EmptyString
+	t.stdin = make([]byte, ZERO)
 	t.exitCode = ZERO
 	t.output = make([]byte, ZERO)
 	return t

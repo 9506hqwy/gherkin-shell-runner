@@ -96,8 +96,10 @@ func setStdinBlock(
 	stdin *godog.DocString,
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
-	t.stdin = stdin.Content
-	return ctx, nil
+
+	var err error
+	t.stdin, err = encodingToBytes(t.stdinEncoding, stdin.Content)
+	return ctx, err
 }
 
 func setStdinLine(
@@ -111,8 +113,8 @@ func setStdinLine(
 		return ctx, err
 	}
 
-	t.stdin = in
-	return ctx, nil
+	t.stdin, err = encodingToBytes(t.stdinEncoding, in)
+	return ctx, err
 }
 
 func setWait(ctx context.Context, wait int) (context.Context, error) {

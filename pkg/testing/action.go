@@ -114,7 +114,7 @@ func runCommand(
 	terminal := newTerminal()
 	go terminal.Copy(*ptmx)
 
-	if t.stdin != EmptyString {
+	if len(t.stdin) != ZERO {
 		err = inputStdin(t, ptmx)
 		if err != nil {
 			return nil, err

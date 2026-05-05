@@ -117,6 +117,5 @@ format:
 ## TODO
 
 - Wait for complete output correctly.
-- Input encoding.
 - Newline handling.
 - Expression

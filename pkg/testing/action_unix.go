@@ -37,7 +37,7 @@ func inputStdin(
 	t *tuiFeature,
 	ptmx *pty.Pty,
 ) error {
-	_, err := (*ptmx).Write([]byte(t.stdin))
+	_, err := (*ptmx).Write(t.stdin)
 	if err != nil {
 		return err
 	}
