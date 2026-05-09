@@ -2,8 +2,11 @@ package testing
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
+	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -12,7 +15,9 @@ type TokenType int
 const (
 	TokenLiteral TokenType = iota
 	TokenNumber
+	TokenOperator
 	TokenVariable
+	TokenWhitespace
 )
 
 type token struct {
@@ -27,7 +32,9 @@ const (
 	TokenReaderModeLiteral
 	TokenReaderModeLiteralEsc
 	TokenReaderModeNumber
+	TokenReaderModeOperator
 	TokenReaderModeVariable
+	TokenReaderModeWhitespace
 )
 
 type tokenHandlerFunc func(b byte) (bool, error)
@@ -91,74 +98,43 @@ func (r *tokenReader) completed() error {
 	return nil
 }
 
+func (r *tokenReader) startTokenHandler() []tokenHandlerFunc {
+	return []tokenHandlerFunc{
+		r.startLiteral,
+		r.startLiteralEsc,
+		r.startNumber,
+		r.startOperator,
+		r.startVariable,
+		r.startWhitespace,
+	}
+}
+
+func (r *tokenReader) endTokenHandler() []tokenHandlerFunc {
+	return []tokenHandlerFunc{
+		r.endLiteral,
+		r.endLiteralEsc,
+		r.endNumber,
+		r.endOperator,
+		r.endVariable,
+		r.endWhitespace,
+	}
+}
+
 func (r *tokenReader) handleToken(b byte) error {
-	tokenHandler := []tokenHandlerFunc{
-		r.handleLiteral,
-		r.handleLiteralEsc,
-		r.handleNumber,
-		r.handleVariable,
+	for _, handler := range r.endTokenHandler() {
+		if next, err := handler(b); next {
+			return err
+		}
 	}
 
-	for _, handler := range tokenHandler {
-		if handled, err := handler(b); handled {
+	for _, handler := range r.startTokenHandler() {
+		if next, err := handler(b); next {
 			return err
 		}
 	}
 
 	r.current = append(r.current, b)
 	return nil
-}
-
-func (r *tokenReader) handleLiteral(b byte) (bool, error) {
-	if started, err := r.startLiteral(b); started {
-		return true, err
-	}
-
-	if ended, err := r.endLiteral(b); ended {
-		return true, err
-	}
-
-	return false, nil
-}
-
-func (r *tokenReader) handleLiteralEsc(b byte) (bool, error) {
-	if started, err := r.startLiteralEsc(b); started {
-		return true, err
-	}
-
-	if ended, err := r.endLiteralEsc(b); ended {
-		return true, err
-	}
-
-	return false, nil
-}
-
-func (r *tokenReader) handleNumber(b byte) (bool, error) {
-	if started, err := r.startNumber(b); started {
-		r.current = append(r.current, b)
-		return true, err
-	}
-
-	if ended, err := r.endNumber(b); ended {
-		r.current = append(r.current, b)
-		return true, err
-	}
-
-	return false, nil
-}
-
-func (r *tokenReader) handleVariable(b byte) (bool, error) {
-	if started, err := r.startVariable(b); started {
-		r.current = append(r.current, b)
-		return true, err
-	}
-
-	if ended, err := r.endVariable(b); ended {
-		r.current = append(r.current, b)
-		return true, err
-	}
-
-	return false, nil
 }
 
 func (r *tokenReader) startLiteral(b byte) (bool, error) {
@@ -244,7 +220,7 @@ func (r *tokenReader) startNumber(b byte) (bool, error) {
 	}
 
 	r.mode = TokenReaderModeNumber
-	return true, nil
+	return false, nil
 }
 
 func (r *tokenReader) endNumber(b byte) (bool, error) {
@@ -262,7 +238,43 @@ func (r *tokenReader) endNumber(b byte) (bool, error) {
 	}
 
 	r.mode = TokenReaderModeNone
-	return true, nil
+	return false, nil
+}
+
+func (r *tokenReader) startOperator(b byte) (bool, error) {
+	if r.mode != TokenReaderModeNone {
+		return false, nil
+	}
+
+	if !operator(b) {
+		return false, nil
+	}
+
+	err := r.addToken(nil)
+	if err != nil {
+		return true, err
+	}
+
+	r.mode = TokenReaderModeOperator
+	return false, nil
+}
+
+func (r *tokenReader) endOperator(b byte) (bool, error) {
+	if r.mode != TokenReaderModeOperator {
+		return false, nil
+	}
+
+	if operator(b) {
+		return false, nil
+	}
+
+	err := r.addToken(nil)
+	if err != nil {
+		return true, err
+	}
+
+	r.mode = TokenReaderModeNone
+	return false, nil
 }
 
 func (r *tokenReader) startVariable(b byte) (bool, error) {
@@ -280,7 +292,7 @@ func (r *tokenReader) startVariable(b byte) (bool, error) {
 	}
 
 	r.mode = TokenReaderModeVariable
-	return true, nil
+	return false, nil
 }
 
 func (r *tokenReader) endVariable(b byte) (bool, error) {
@@ -298,7 +310,43 @@ func (r *tokenReader) endVariable(b byte) (bool, error) {
 	}
 
 	r.mode = TokenReaderModeNone
-	return true, nil
+	return false, nil
+}
+
+func (r *tokenReader) startWhitespace(b byte) (bool, error) {
+	if r.mode != TokenReaderModeNone {
+		return false, nil
+	}
+
+	if !whitespace(b) {
+		return false, nil
+	}
+
+	err := r.addToken(nil)
+	if err != nil {
+		return true, err
+	}
+
+	r.mode = TokenReaderModeWhitespace
+	return false, nil
+}
+
+func (r *tokenReader) endWhitespace(b byte) (bool, error) {
+	if r.mode != TokenReaderModeWhitespace {
+		return false, nil
+	}
+
+	if whitespace(b) {
+		return false, nil
+	}
+
+	err := r.addToken(nil)
+	if err != nil {
+		return true, err
+	}
+
+	r.mode = TokenReaderModeNone
+	return false, nil
 }
 
 func (r *tokenReader) addToken(eof error) error {
@@ -319,8 +367,12 @@ func (r *tokenReader) addToken(eof error) error {
 		tokenType = TokenLiteral
 	case TokenReaderModeNumber:
 		tokenType = TokenNumber
+	case TokenReaderModeOperator:
+		tokenType = TokenOperator
 	case TokenReaderModeVariable:
 		tokenType = TokenVariable
+	case TokenReaderModeWhitespace:
+		tokenType = TokenWhitespace
 	default:
 		return fmt.Errorf("not supported format: %s", string(r.current))
 	}
@@ -347,6 +399,14 @@ func number(b byte) bool {
 	return b >= KeyCode0 && b <= KeyCode9
 }
 
+func operator(b byte) bool {
+	return b == KeyCodePls
+}
+
+func whitespace(b byte) bool {
+	return b == KeyCodeSpc
+}
+
 func parseValueOne(t *tuiFeature, value string) (string, error) {
 	input := strings.NewReader(value)
 	reader := newTokenReader(input)
@@ -357,7 +417,13 @@ func parseValueOne(t *tuiFeature, value string) (string, error) {
 
 	//revive:disable:add-constant
 	if len(reader.tokens) != 1 {
-		return EmptyString, fmt.Errorf("not supported format: %s", value)
+		cal := &calculator{}
+		err = cal.compile(reader.tokens)
+		if err != nil {
+			return EmptyString, err
+		}
+
+		return cal.calculate(t)
 	}
 	//revive:enable:add-constant
 
@@ -378,3 +444,157 @@ func parseValueOne(t *tuiFeature, value string) (string, error) {
 		return token.value, nil
 	}
 }
+
+// ---------------------------------------------------------------------------
+
+type InstructionType int
+
+const (
+	InstructionTypeVal InstructionType = iota
+	InstructionTypeAdd
+)
+
+type instruction struct {
+	instType InstructionType
+	token    token
+}
+
+type calculator struct {
+	instructions []instruction
+}
+
+func (r *calculator) compile(tokens []token) error {
+	var stack []instruction
+
+	for _, token := range tokens {
+		switch token.tokenType {
+		case TokenLiteral, TokenNumber, TokenVariable:
+			instruction := instruction{
+				instType: InstructionTypeVal,
+				token:    token,
+			}
+			r.instructions = append(r.instructions, instruction)
+		case TokenOperator:
+			instruction := instruction{
+				instType: InstructionTypeAdd,
+				token:    token,
+			}
+			stack = append(stack, instruction)
+		case TokenWhitespace:
+			continue
+		default:
+			return fmt.Errorf("not supported token: %v", token)
+		}
+	}
+
+	slices.Reverse(stack)
+	r.instructions = append(r.instructions, stack...)
+
+	return nil
+}
+
+//revive:disable:add-constant
+
+func (r *calculator) calculate(t *tuiFeature) (string, error) {
+	var stack []instruction
+
+	for _, inst := range r.instructions {
+		switch inst.instType {
+		case InstructionTypeVal:
+			stack = append(stack, inst)
+		case InstructionTypeAdd:
+			var err error
+			stack, err = calculateAdd(t, stack)
+			if err != nil {
+				return EmptyString, err
+			}
+		default:
+			return EmptyString, errors.New("invalid expression")
+		}
+	}
+
+	if len(stack) != 1 {
+		return EmptyString, errors.New("invalid expression")
+	}
+
+	return stack[0].token.value, nil
+}
+
+func calculateAdd(t *tuiFeature, stack []instruction) ([]instruction, error) {
+	if len(stack) < 2 {
+		return nil, errors.New("invalid expression")
+	}
+
+	y := stack[len(stack)-1]
+	x := stack[len(stack)-2]
+	stack = stack[:len(stack)-2]
+
+	result, err := calculateTokenAdd(t, x.token, y.token)
+	if err != nil {
+		return nil, err
+	}
+
+	stack = append(stack, instruction{
+		instType: InstructionTypeVal,
+		token:    result,
+	})
+
+	return stack, nil
+}
+
+func calculateTokenAdd(t *tuiFeature, x token, y token) (token, error) {
+	xToken, err := getVariableToken(t, x)
+	if err != nil {
+		return token{}, err
+	}
+
+	yToken, err := getVariableToken(t, y)
+	if err != nil {
+		return token{}, err
+	}
+
+	switch {
+	case xToken.tokenType == TokenNumber || yToken.tokenType == TokenNumber:
+		return calculateTokenAddNumber(xToken, yToken)
+	default:
+		return token{
+			tokenType: TokenLiteral,
+			value:     xToken.value + yToken.value,
+		}, nil
+	}
+}
+
+func getVariableToken(t *tuiFeature, value token) (token, error) {
+	if value.tokenType == TokenVariable {
+		v, ok := t.vars[value.value]
+		if !ok {
+			return token{}, fmt.Errorf("not found variable: %s", value.value)
+		}
+
+		value = token{
+			tokenType: TokenLiteral,
+			value:     v,
+		}
+	}
+
+	return value, nil
+}
+
+func calculateTokenAddNumber(x token, y token) (token, error) {
+	xValue, err := strconv.ParseInt(x.value, 10, 64)
+	if err != nil {
+		return token{}, fmt.Errorf("invalid number: %s", x.value)
+	}
+
+	yValue, err := strconv.ParseInt(y.value, 10, 64)
+	if err != nil {
+		return token{}, fmt.Errorf("invalid number: %s", y.value)
+	}
+
+	return token{
+		tokenType: TokenNumber,
+		value:     fmt.Sprintf("%d", xValue+yValue),
+	}, nil
+}
+
+//revive:enable:add-constant

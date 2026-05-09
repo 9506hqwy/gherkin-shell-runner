@@ -118,4 +118,3 @@ format:
 
 - Wait for complete output correctly.
 - Newline handling.
-- Expression

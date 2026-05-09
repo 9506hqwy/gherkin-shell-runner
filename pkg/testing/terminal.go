@@ -41,6 +41,7 @@ const (
 	KeyCodeSpc byte = 0x20 // SPC
 	KeyCodeDqt byte = 0x22 // "
 	KeyCodeSqt byte = 0x27 // '
+	KeyCodePls byte = 0x2b // +
 	KeyCodeHyp byte = 0x2d // -
 	KeyCode0   byte = 0x30 // 0
 	KeyCode9   byte = 0x39 // 9
