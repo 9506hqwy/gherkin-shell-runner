@@ -35,6 +35,7 @@ const (
 	KeyCodeNul byte = 0x00 // NUL
 	KeyCodeHt  byte = 0x09 // HT
 	KeyCodeLf  byte = 0x0a // LF
+	KeyCodeCr  byte = 0x0d // CR
 	KeyCodeBel byte = 0x07 // BEL
 	KeyCodeEsc byte = 0x1b // ESC
 	KeyCodeUs  byte = 0x1f // US
@@ -254,7 +255,7 @@ func csiKeyCodeStop(b byte) bool {
 
 func nonPrintable(b byte) bool {
 	if b <= KeyCodeUs || b == KeyCodeDel {
-		if b != KeyCodeHt && b != KeyCodeLf {
+		if b != KeyCodeHt && b != KeyCodeLf && b != KeyCodeCr {
 			return true
 		}
 	}

@@ -17,7 +17,7 @@ func inputStdin(
 	ptmx *pty.Pty,
 ) error {
 	// replace LF to CR.
-	encodedBytes := bytes.ReplaceAll(t.stdin, []byte{0x0a}, []byte{0x0d})
+	encodedBytes := bytes.ReplaceAll(t.stdin, []byte{KeyCodeLf}, []byte{KeyCodeCr})
 
 	_, err := (*ptmx).Write(encodedBytes)
 	if err != nil {

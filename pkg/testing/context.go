@@ -3,6 +3,7 @@ package testing
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -97,8 +98,9 @@ func setStdinBlock(
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
 
-	var err error
-	t.stdin, err = encodingToBytes(t.stdinEncoding, stdin.Content)
+	stdinBytes, err := encodingToBytes(t.stdinEncoding, stdin.Content)
+	t.stdin = convertNewline(stdinBytes, t.stdinNewline)
+
 	return ctx, err
 }
 
@@ -113,7 +115,9 @@ func setStdinLine(
 		return ctx, err
 	}
 
-	t.stdin, err = encodingToBytes(t.stdinEncoding, in)
+	stdinBytes, err := encodingToBytes(t.stdinEncoding, in)
+	t.stdin = convertNewline(stdinBytes, t.stdinNewline)
+
 	return ctx, err
 }
 
@@ -168,6 +172,42 @@ func setFileEncoding(
 ) (context.Context, error) {
 	t := getTuiFeature(ctx)
 	t.fileEncoding = encoding
+	return ctx, nil
+}
+
+func setOutputNewline(
+	ctx context.Context,
+	newline string,
+) (context.Context, error) {
+	t := getTuiFeature(ctx)
+	switch newline {
+	case "crlf":
+		t.outputNewline = []byte{KeyCodeCr, KeyCodeLf}
+	case "cr":
+		t.outputNewline = []byte{KeyCodeCr}
+	case "lf":
+		t.outputNewline = []byte{KeyCodeLf}
+	default:
+		return ctx, fmt.Errorf("not suported newline code: %s", newline)
+	}
+	return ctx, nil
+}
+
+func setStdinNewline(
+	ctx context.Context,
+	newline string,
+) (context.Context, error) {
+	t := getTuiFeature(ctx)
+	switch newline {
+	case "crlf":
+		t.stdinNewline = []byte{KeyCodeCr, KeyCodeLf}
+	case "cr":
+		t.stdinNewline = []byte{KeyCodeCr}
+	case "lf":
+		t.stdinNewline = []byte{KeyCodeLf}
+	default:
+		return ctx, fmt.Errorf("not suported newline code: %s", newline)
+	}
 	return ctx, nil
 }
 

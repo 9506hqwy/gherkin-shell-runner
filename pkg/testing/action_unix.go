@@ -15,6 +15,8 @@ func setPty(t *tuiFeature, ptmx *pty.Pty) error {
 
 	// disable input echo.
 	term.Opts["echo"] = false
+	// disable cr-nl map.
+	term.Opts["icrnl"] = false
 	// disable `onlcr`.
 	term.Opts["opost"] = false
 

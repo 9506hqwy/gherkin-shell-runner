@@ -114,6 +114,8 @@ func checkOutputEq(
 		return ctx, err
 	}
 
+	expectedBytes = convertNewline(expectedBytes, t.outputNewline)
+
 	if bytes.Equal(t.output, expectedBytes) != (mode == CompareModeEqual) {
 		return ctx, fmt.Errorf(
 			"expected Output to be: '%s', but actual is: '%s'",
@@ -245,4 +247,22 @@ func encodingSjis(value string) ([]byte, error) {
 	toBytes, _, err := transform.Bytes(t, fromBytes)
 
 	return toBytes, err
+}
+
+func convertNewline(value []byte, newlinne []byte) []byte {
+	if len(newlinne) == ZERO {
+		return value
+	}
+
+	value = bytes.ReplaceAll(
+		value,
+		[]byte{KeyCodeCr, KeyCodeLf},
+		[]byte{KeyCodeNul},
+	)
+
+	value = bytes.ReplaceAll(value, []byte{KeyCodeCr}, []byte{KeyCodeNul})
+
+	value = bytes.ReplaceAll(value, []byte{KeyCodeLf}, []byte{KeyCodeNul})
+
+	return bytes.ReplaceAll(value, []byte{KeyCodeNul}, newlinne)
 }

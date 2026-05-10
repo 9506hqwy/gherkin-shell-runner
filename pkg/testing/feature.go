@@ -30,6 +30,8 @@ type tuiFeature struct {
 	outputEncoding string
 	stdinEncoding  string
 	fileEncoding   string
+	outputNewline  []byte
+	stdinNewline   []byte
 	filePermission os.FileMode
 	delWorkspace   bool
 	vars           map[string]string
@@ -56,6 +58,8 @@ func initTuiFeature(t *tuiFeature) *tuiFeature {
 	t.outputEncoding = EmptyString
 	t.stdinEncoding = EmptyString
 	t.fileEncoding = EmptyString
+	t.outputNewline = make([]byte, ZERO)
+	t.stdinNewline = make([]byte, ZERO)
 	t.filePermission = DefaultFilePerm
 	t.delWorkspace = false
 
@@ -135,6 +139,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^encoding output (.+)$`, setOutputEncoding)
 	ctx.Step(`^encoding stdin (.+)$`, setStdinEncoding)
 	ctx.Step(`^encoding file (.+)$`, setFileEncoding)
+	ctx.Step(`^newline output (.+)$`, setOutputNewline)
+	ctx.Step(`^newline stdin (.+)$`, setStdinNewline)
 	ctx.Step(`^use temp workspace$`, setTempWorkspace)
 	ctx.Step(`^set ([A-Za-z][0-9A-Za-z_]*) (.+)$`, setVariable)
 

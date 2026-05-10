@@ -51,7 +51,10 @@ Example: Run scenario with `linux` tags and without `ignore` tag.
 - `Given timeout <milli second>`
 - `Given size <width> <height>`
 - `Given encoding file <encoding>`
+- `Given encoding stdin <encoding>`
 - `Given encoding output <encoding>`
+- `Given newline stdin <newline>`
+- `Given newline output <newline>`
 - `Given use temp workspace`
 - `Given set <name> <value>`
 - `Given read file <path> to <variable>`
@@ -117,4 +120,3 @@ format:
 ## TODO
 
 - Wait for complete output correctly.
-- Newline handling.
