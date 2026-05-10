@@ -8,6 +8,7 @@ Feature: environment variables
         And env KEY "VALUE"
         And arg "/c"
         And arg "echo %KEY%"
+        And newline output crlf
         # act
         When exec
         # assert

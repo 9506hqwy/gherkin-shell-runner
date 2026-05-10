@@ -8,6 +8,7 @@ Feature: workspace
         And workspace "C:\\"
         And arg "/c"
         And arg "cd"
+        And newline output crlf
         # act
         When exec
         # assert

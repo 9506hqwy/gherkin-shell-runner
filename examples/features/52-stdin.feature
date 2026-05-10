@@ -12,6 +12,7 @@ Feature: sort command
             text2
             text1
             """
+        And newline output crlf
         # act
         When exec
         # assert

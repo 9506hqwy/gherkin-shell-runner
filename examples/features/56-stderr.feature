@@ -7,6 +7,7 @@ Feature: echo command
         Given command "cmd.exe"
         And arg "/c"
         And arg "echo error 1>&2"
+        And newline output crlf
         # act
         When exec
         # assert
