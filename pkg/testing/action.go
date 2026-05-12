@@ -123,7 +123,12 @@ func runCommand(
 
 	err = cmd.Wait()
 
-	// TODO: wait for complete output correctly.
+	// FIXME:
+	// Wait for buffering output completely.
+	// Need few milliseconds after exiting process in Windows,
+	// because pty writes output pipe.
+	// When close pty and pipe, output abort, so wait.
+	// How to flush pty's output ?
 	time.Sleep(time.Duration(t.wait) * time.Millisecond)
 
 	return terminal.Buffer(), err

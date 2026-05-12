@@ -116,7 +116,3 @@ format:
 - junit
 - pretty
 - progress
-
-## TODO
-
-- Wait for complete output correctly.
