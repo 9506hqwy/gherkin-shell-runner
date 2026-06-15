@@ -9,6 +9,9 @@ import (
 )
 
 func setPty(_ *tuiFeature, _ *pty.Pty) error {
+	// Need to configure ENABLE_ECHO_INPUT to ptyIn ?
+	// https://github.com/aymanbagabas/go-pty/blob/v0.2.3/pty_windows.go#L52
+	// https://devblogs.microsoft.com/commandline/windows-command-line-introducing-the-windows-pseudo-console-conpty/
 	return nil
 }
 
