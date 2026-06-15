@@ -58,8 +58,6 @@ func initTuiFeature(t *tuiFeature) *tuiFeature {
 	t.outputEncoding = EmptyString
 	t.stdinEncoding = EmptyString
 	t.fileEncoding = EmptyString
-	t.outputNewline = make([]byte, ZERO)
-	t.stdinNewline = make([]byte, ZERO)
 	t.filePermission = DefaultFilePerm
 	t.delWorkspace = false
 
@@ -67,7 +65,7 @@ func initTuiFeature(t *tuiFeature) *tuiFeature {
 		t.vars = make(map[string]string)
 	}
 
-	return t
+	return initTuiFeatureByPlatform(t)
 }
 
 func resetTuiFeature(t *tuiFeature) *tuiFeature {
