@@ -129,12 +129,14 @@ func runCommand(
 		}
 	}
 
-	err = errors.Join(cmd.Wait(), waitBufferingCompleted(ptmx, &wg))
-	// ptmx was closed in waitBufferingCompleted.
+	err = cmd.Wait()
 
 	if t.wait != ZERO {
 		time.Sleep(time.Duration(t.wait) * time.Millisecond)
 	}
+
+	err = errors.Join(err, waitBufferingCompleted(ptmx, &wg))
+	// ptmx was closed in waitBufferingCompleted.
 
 	return terminal.Buffer(), err
 }
