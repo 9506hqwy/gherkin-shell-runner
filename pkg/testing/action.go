@@ -3,9 +3,11 @@ package testing
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"sync"
 	"time"
 
 	"github.com/aymanbagabas/go-pty"
@@ -28,10 +30,9 @@ func runFeature(
 		return ctx, err
 	}
 
-	defer ptmx.Close()
-
 	err = setPty(t, &ptmx)
 	if err != nil {
+		ptmx.Close()
 		return ctx, err
 	}
 
@@ -39,6 +40,7 @@ func runFeature(
 	defer cancel()
 
 	output, err := runCommand(t, &ptmx, cmd)
+	// ptmx was closed in runCommand.
 
 	if cmdCtxErr() == context.DeadlineExceeded {
 		// cmd.Wait() do not returns context.DeadlineExceeded
@@ -56,8 +58,8 @@ func runFeature(
 		err = nil
 	}
 
-	exitErr, ok := err.(*exec.ExitError)
-	if ok {
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
 		ctx = setFail(ctx, t, exitErr)
 		err = nil
 	}
@@ -106,30 +108,33 @@ func runCommand(
 	ptmx *pty.Pty,
 	cmd *pty.Cmd,
 ) (*bytes.Buffer, error) {
+	var wg sync.WaitGroup
+
 	err := cmd.Start()
 	if err != nil {
+		(*ptmx).Close()
 		return nil, err
 	}
 
 	terminal := newTerminal()
-	go terminal.Copy(*ptmx)
+	wg.Go(func() {
+		_, _ = terminal.Copy(*ptmx)
+	})
 
 	if len(t.stdin) != ZERO {
 		err = inputStdin(t, ptmx)
 		if err != nil {
+			(*ptmx).Close()
 			return nil, err
 		}
 	}
 
-	err = cmd.Wait()
+	err = errors.Join(cmd.Wait(), waitBufferingCompleted(ptmx, &wg))
+	// ptmx was closed in waitBufferingCompleted.
 
-	// FIXME:
-	// Wait for buffering output completely.
-	// Need few milliseconds after exiting process in Windows,
-	// because pty writes output pipe.
-	// When close pty and pipe, output abort, so wait.
-	// How to flush pty's output ?
-	time.Sleep(time.Duration(t.wait) * time.Millisecond)
+	if t.wait != ZERO {
+		time.Sleep(time.Duration(t.wait) * time.Millisecond)
+	}
 
 	return terminal.Buffer(), err
 }

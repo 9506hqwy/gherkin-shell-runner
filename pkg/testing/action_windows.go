@@ -4,8 +4,11 @@ package testing
 
 import (
 	"bytes"
+	"errors"
+	"sync"
 
 	"github.com/aymanbagabas/go-pty"
+	"golang.org/x/sys/windows"
 )
 
 func setPty(_ *tuiFeature, _ *pty.Pty) error {
@@ -35,4 +38,21 @@ func inputStdin(
 	}
 
 	return nil
+}
+
+func waitBufferingCompleted(ptmx *pty.Pty, wg *sync.WaitGroup) error {
+	// Close pty only, output EOF to output pipe.
+	// When close pty and pipe, output abort, so wait.
+	fd := (*ptmx).Fd()
+	windows.ClosePseudoConsole(windows.Handle(fd))
+
+	// Wait for buffering output completely.
+	(*wg).Wait()
+
+	// Close pipe after buffering.
+	conPty := (*ptmx).(pty.ConPty)
+	return errors.Join(
+		conPty.InputPipe().Close(),
+		conPty.OutputPipe().Close(),
+	)
 }

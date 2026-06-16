@@ -9,7 +9,7 @@ import (
 
 const ZERO = 0
 const EmptyString = ""
-const DefaultWait = 30
+const DefaultWait = 0
 const DefaultTimeout = 60 * 1000
 const DefaultFilePerm os.FileMode = 0644
 

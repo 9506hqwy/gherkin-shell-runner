@@ -3,6 +3,8 @@
 package testing
 
 import (
+	"sync"
+
 	"github.com/aymanbagabas/go-pty"
 	"github.com/u-root/u-root/pkg/termios"
 )
@@ -51,4 +53,10 @@ func inputStdin(
 	}
 
 	return nil
+}
+
+func waitBufferingCompleted(ptmx *pty.Pty, wg *sync.WaitGroup) error {
+	err := (*ptmx).Close()
+	(*wg).Wait()
+	return err
 }
