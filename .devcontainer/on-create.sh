@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Install dependencies
 sudo apt-get update -y
-sudo apt-get install -y graphviz shellcheck zstd
+sudo apt-get install -y graphviz shellcheck
 
 # Configuration PATH
 mkdir -p ~/.local/bin
@@ -36,10 +36,10 @@ curl -fsSL -o - "https://github.com/dandavison/delta/releases/download/${DELTA_V
 chmod +x ~/.local/bin/delta
 
 # Install edit
-#EDIT_URL="https://api.github.com/repos/microsoft/edit/releases?per_page=1"
-EDIT_VERSION="v1.2.0"
-curl -fsSL -o - "https://github.com/microsoft/edit/releases/download/${EDIT_VERSION}/edit-${EDIT_VERSION#v}-x86_64-linux-gnu.tar.zst" | \
-    tar --zstd -xf - -O "edit" > ~/.local/bin/edit
+EDIT_URL="https://api.github.com/repos/microsoft/edit/releases?per_page=1"
+EDIT_VERSION=$(curl -fsSL -H "${GITHUB_HEADER_ACCEPT}" -H "${GITHUB_HEADER_VERSION}" "${EDIT_URL}" | jq -r '.[0].tag_name')
+curl -fsSL -o - "https://github.com/microsoft/edit/releases/download/${EDIT_VERSION}/edit-${EDIT_VERSION#v}-x86_64-linux-gnu.tar.gz" | \
+    tar -zxf - -O "edit" > ~/.local/bin/edit
 chmod +x ~/.local/bin/edit
 
 # Install lefthook

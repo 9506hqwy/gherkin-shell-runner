@@ -1,0 +1,14 @@
+{
+    "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.17.5/.schema/devbox.schema.json",
+    "packages": [
+        "actionlint@latest",
+        "bat@latest",
+        "delta@latest",
+        "go@1.26",
+        "graphviz@latest",
+        "lefthook@latest",
+        "msedit@latest",
+        "shellcheck@latest",
+        "yq@latest"
+    ]
+}
